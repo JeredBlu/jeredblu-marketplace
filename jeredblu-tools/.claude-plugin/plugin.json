@@ -1,0 +1,10 @@
+{
+  "name": "jeredblu-tools",
+  "description": "Claude Code skills and tools from JeredBlu - PRD Creator, Skill Evaluator, MCP Evaluator, and more",
+  "version": "1.0.0",
+  "author": {
+    "name": "Jered Blumenfeld"
+  },
+  "homepage": "https://github.com/JeredBlu/jeredblu-marketplace",
+  "repository": "https://github.com/JeredBlu/jeredblu-marketplace"
+}

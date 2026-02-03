@@ -1,0 +1,13 @@
+{
+  "name": "jeredblu-marketplace",
+  "owner": {
+    "name": "Jered Blumenfeld"
+  },
+  "plugins": [
+    {
+      "name": "jeredblu-tools",
+      "source": "./jeredblu-tools",
+      "description": "Skills, commands, and tools from JeredBlu's YouTube channel"
+    }
+  ]
+}
