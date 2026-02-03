@@ -51,22 +51,9 @@ Download skills individually for manual installation:
 ### Claude Code (Local)
 
 1. Extract the zip file
-2. Move contents to `~/.claude/skills/<skill-name>/`
+2. Drop unzipped folder to `~/.claude/skills` in your project directory or global Claude config
 3. Restart Claude Code
 
-### VS Code / GitHub Copilot
-
-1. Extract the zip file
-2. Move contents to `.github/skills/<skill-name>/` (project) or `~/.copilot/skills/<skill-name>/` (global)
-3. Enable preview setting: `chat.useAgentSkills`
-4. Restart VS Code
-
-### Cursor
-
-1. Switch to Nightly channel: **Settings > Beta > Update Channel > Nightly**
-2. Extract the zip file
-3. Move contents to `.cursor/skills/<skill-name>/`
-4. Restart Cursor
 
 ### OpenAI Codex CLI
 
@@ -90,18 +77,18 @@ The skills work best with MCP servers. Both are optional but highly recommended 
 
 **GitHub MCP Server (Recommended)**
 - Enables direct GitHub repository access for analyzing skills and MCP servers
-- Installation: `@modelcontextprotocol/server-github`
+- [See Github Page for Install Instructions](https://github.com/github/github-mcp-server)
 - Requires: GitHub Personal Access Token
 
 **Bright Data MCP Server (Recommended)**
 - Enables web scraping and Reddit access for community feedback analysis
-- Installation: `@brightdata/mcp`
+- [See Github Page for Install Instructions](https://github.com/brightdata/brightdata-mcp)
 - Requires: Bright Data API token
-- Note: Enable Pro Mode for Reddit scraping
+- [Create BRD Account with my Link (you might get some extra free credits)](https://tinyurl.com/jeredwebmcp)
 
 **Context7 MCP Server (Optional)**
 - Enables documentation lookup for technology research
-- Installation: `@upstash/context7-mcp`
+- [See Github Page for Install Instructions](https://github.com/upstash/context7)
 
 Install and configure these MCP servers following their official installation instructions.
 
@@ -229,11 +216,6 @@ Claude: Direct repo access, full code review, Reddit community
 ## Coming Soon
 
 - Custom slash commands
-- Agent definitions
+- Agents
 - Additional skills
 
----
-
-## License
-
-MIT
