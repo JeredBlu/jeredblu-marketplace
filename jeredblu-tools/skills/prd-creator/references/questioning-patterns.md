@@ -4,13 +4,15 @@ Dynamic discovery framework for understanding user requirements without overwhel
 
 ## Core Principle
 
-**Ask what you don't know. Don't ask what they've already told you.**
+**Cover every discovery area. Adapt *how* you ask based on context, but not *whether* you ask.**
 
-Adapt your questioning based on:
-- What information they've already provided
-- Signals about their experience level
-- Complexity of their project
+Adapt your questioning style based on:
+- What information they've already provided (acknowledge it, don't re-ask it)
+- Signals about their experience level (adjust tone and depth)
+- Complexity of their project (adjust detail level)
 - Context clues about their environment
+
+But always ensure all 11 discovery areas from SKILL.md are addressed before generating.
 
 ---
 
@@ -81,10 +83,10 @@ Adapt your questioning based on:
 
 **Understand data needs:**
 
-**Signals to ask:**
-- Mentioned users, accounts → "Do users need to create accounts?"
-- Mentioned tracking, history → "What data needs to be saved?"
-- Mentioned sharing → "How should users share with each other?"
+**Adapt phrasing to the project:**
+- If they mentioned users/accounts → "What data do you need to store per user?"
+- If they mentioned tracking/history → "What data needs to be saved long-term?"
+- If they mentioned sharing → "How should users share with each other?"
 
 **Questions:**
 - "What information needs to be stored long-term?"
@@ -93,29 +95,26 @@ Adapt your questioning based on:
 
 ### 6. Authentication & Security
 
-**Only ask if relevant to the project:**
-
-**When to ask:**
-- Project has user accounts
-- Handles sensitive data
-- Involves payments or personal information
+**Always cover — adapt phrasing to project context:**
 
 **Questions:**
 - "How should users log in?" (Social auth, email/password, magic links?)
 - "Are there different user roles with different permissions?"
 - "Any specific security or compliance requirements?"
+- If no accounts seem needed: "Will this need any kind of authentication, or is it fully public?"
 
 ### 7. Third-Party Integrations
 
-**Explore dependencies:**
+**Always explore — most projects have dependencies even if the user doesn't realize it:**
 
 **If they mention services:**
 - "Are you already using [service] or considering alternatives?"
 - "Do you have API access for [service]?"
 
-**If not mentioned but relevant:**
+**Proactively raise if not mentioned:**
 - "Will this need to connect to any external services?" (payment, email, analytics, etc.)
 - "Are there any tools your team already uses that this should integrate with?"
+- If the idea clearly requires something (e.g., maps, payments, notifications): bring it up
 
 ### 8. Technical Constraints
 
@@ -296,6 +295,9 @@ Make implicit assumptions explicit:
 - Ask about Phase 2 features before MVP is clear
 - Overwhelm with 5+ questions at once
 - Ask "Do you want X?" for every possible feature
+- **Jump to PRD generation after only a few questions — thoroughness uncovers better requirements**
+- Skip discovery areas because the project seems "simple"
+- Treat the 30% education component as optional
 
 **Do:**
 - Let conversation flow naturally
@@ -304,34 +306,36 @@ Make implicit assumptions explicit:
 - Circle back if gaps emerge later
 - Use their terminology back to them
 - Offer recommendations proactively when helpful
+- Cover all 11 discovery areas even for small projects (just ask more concisely)
 
 ---
 
 ## Conversation Pacing
 
 **Phase 1 (First 3-5 questions):**
-- Broad understanding
-- Core functionality
-- Target users
-- Platform basics
+- Broad understanding of the idea
+- Core features & functionality
+- Target audience
+- Platform (web, mobile, desktop)
 
-**Phase 2 (Next 5-10 questions):**
-- Specific features and flows
-- Data requirements
-- Technical preferences
-- Integrations
+**Phase 2 (Next 5-8 questions):**
+- Specific features and user flows
+- Data storage & management
+- Auth & security requirements
+- Third-party integrations
+- Costs (API, hosting, services)
+- Technical challenges & scalability
 
-**Phase 3 (Final questions):**
-- Edge cases
-- Success criteria
-- Timeline/resources
-- Anything missing
+**Phase 3 (Final 2-3 questions):**
+- UI/UX concepts & existing wireframes
+- Edge cases and success criteria
+- Anything missing — "What haven't I asked about that's important to you?"
 
-**Signal for PRD generation:**
-- You can explain the product clearly
-- You know the core features and priorities
-- You understand the target users
-- You have enough technical context to recommend a stack
-- Major questions are answered
+**Minimum: 10 questions before considering PRD generation.**
 
-If in doubt, ask: "I think I have a good picture. Is there anything else important I should know before I create your PRD?"
+**Readiness check for PRD generation:**
+- All 11 discovery areas (from SKILL.md) have been discussed or explicitly deemed N/A by the user
+- You've asked at least 10 substantive questions
+- You've confirmed your understanding with the user: "Before I generate your PRD, let me summarize what I've gathered..." and they've agreed
+
+Do not proceed to generation until these conditions are met.
