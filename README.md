@@ -201,7 +201,7 @@ The skill will:
 - Use a file-based "context firewall" so sub-agent output doesn't bloat the orchestrator's context
 - Reach for the bundled budget-capped `frugal-research.js` workflow for cost-bounded deep research
 
-**Lanes:** research (tested end-to-end) · build/dev, testing, and debugging (sound guidance, newer — verify on your first few tasks).
+**Lanes:** research · build/dev · testing · debugging. As with any delegation, the orchestrator reviews delegated work before relying on it (the built-in quality gate) — so you stay in control of what ships.
 
 **Note:** "Fable" is just the marquee example — the skill uses *whatever model your session starts on* as the orchestrator (Opus works identically) and delegates down from there.
 

@@ -138,10 +138,10 @@ Let lighter agents gather signal; keep truth-judgment with Fable.
 - `references/routing-cheatsheet.md` — one-screen version of the routing table + firewall
   protocol for quick recall mid-task.
 
-## Maturity & credits
+## Credits
 
-The **research lane** (`frugal-research.js`) is tested end-to-end. The **build/dev lane** is
-sound, mechanically-supported guidance but newer — treat it as a strong default, and verify on
-your first few real tasks. The pattern is adapted from BuilderIO's `efficient-fable` skill,
-extended here with explicit model tiers, a conservative build-quality floor, the file-based
-context firewall, harness selection, and the budget-capped research workflow.
+Adapted from BuilderIO's `efficient-fable` skill, extended here with explicit model tiers, a
+conservative build-quality floor, the file-based context firewall, harness selection, and a
+budget-capped research workflow (`frugal-research.js`). Lanes: research, build/dev, testing,
+debugging. As with all delegation, the orchestrator verifies delegated work before relying on
+it — see **Vetting delegated work** above. That review step is the point, not an afterthought.

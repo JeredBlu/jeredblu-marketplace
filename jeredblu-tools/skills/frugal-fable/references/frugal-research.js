@@ -94,12 +94,13 @@ let fetchSlots = MAX_FETCH
 
 const SEARCH_PROMPT = a =>
   '## Web searcher: ' + a.label + '\nQuestion: "' + Q + '"\nAngle: ' + (a.rationale || '') + '\nQuery: `' + a.query + '`\n\n' +
-  'Run WebSearch. If `bdata` is available, ALSO `bdata search "<query>" --json` via Bash (skip silently if missing). ' +
-  'Merge, return the top 3-5 results most relevant to the ORIGINAL question. Skip SEO spam. Structured output only.'
+  'PREFER the Bright Data CLI: run `bdata search "<query>" --json` via Bash FIRST (broader reach, fewer blocks). ' +
+  'ALSO run WebSearch and merge both result sets. If `bdata` is missing or errors, fall back to WebSearch alone. ' +
+  'Return the top 3-5 results most relevant to the ORIGINAL question. Skip SEO spam. Structured output only.'
 
 const FETCH_PROMPT = (s, ang) =>
   '## Source extractor\nQuestion: "' + Q + '"\nURL: ' + s.url + '\nTitle: ' + s.title + '\nVia: ' + ang + '\n\n' +
-  '1. WebFetch the page (fall back to `bdata scrape "<url>" --format markdown` via Bash on block/paywall; skip silently if missing).\n' +
+  '1. Fetch the page: PREFER `bdata scrape "<url>" --format markdown` via Bash (Bright Data Web Unlocker — handles blocks/paywalls). If `bdata` is missing or errors, use WebFetch instead.\n' +
   '2. Write the full extracted notes to a file under `' + SCRATCH + '/` — that path is RELATIVE TO THE CURRENT WORKING DIRECTORY (the repo root); do not write under $HOME. mkdir -p it first. Return the path as scratchFile (CONTEXT FIREWALL — do not paste the full page back).\n' +
   '3. Return 2-4 FALSIFIABLE claims (each with a direct quote + central/supporting/tangential) and the source quality.\n' +
   'If both fetch methods fail or the page is irrelevant, return claims: [] and sourceQuality: "unreliable". Structured output only.'
