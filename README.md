@@ -9,8 +9,9 @@ This marketplace provides skills that work across multiple AI coding tools:
 - **prd-creator**: Create comprehensive PRDs through conversational discovery
 - **agent-skill-evaluator**: Security and safety evaluation for agent skills
 - **mcp-evaluator**: Security and privacy evaluation for MCP servers
+- **frugal-fable**: Keep a premium model (Fable/Opus) on the judgment and delegate token-heavy work to cheaper models (Haiku/Sonnet) — for research, building, testing, and debugging
 
-All skills utilize MCP servers for enhanced functionality and follow the open Agent Skills standard.
+Most skills utilize MCP servers for enhanced functionality and follow the open Agent Skills standard. **frugal-fable** additionally needs Claude Code's workflow + sub-agent orchestration for its full feature set (see the platform note under [Usage](#frugal-fable-1)).
 
 ## Installation Options
 
@@ -35,6 +36,7 @@ Download skills individually for manual installation:
 | PRD Creator | [prd-creator.zip](./downloads/prd-creator.zip) | Conversational PRD generation |
 | Agent Skill Evaluator | [agent-skill-evaluator.zip](./downloads/agent-skill-evaluator.zip) | Security evaluation for skills |
 | MCP Evaluator | [mcp-evaluator.zip](./downloads/mcp-evaluator.zip) | Security evaluation for MCP servers |
+| Frugal Fable | [frugal-fable.zip](./downloads/frugal-fable.zip) | Premium-model orchestration + cheap-model delegation (full features: Claude Code) |
 
 ---
 
@@ -175,6 +177,33 @@ The evaluator will:
 - Community feedback research (Reddit, forums, GitHub)
 - Multi-dimensional scoring
 - Usability assessment
+
+### Frugal Fable
+
+> **Platform note:** Full functionality requires **Claude Code** (a Fable-class runtime with workflow + sub-agent orchestration). On Claude Desktop, Codex, or OpenCode the written delegation guidance still applies, but the bundled budget-capped research workflow won't run.
+
+Keep your most capable model on the thinking and push token-heavy volume to cheaper models:
+
+```
+/frugal-fable
+```
+
+Or naturally:
+```
+Be efficient with Fable on this — don't burn tokens
+Research X but delegate the searching to cheaper agents
+Build this feature but keep Fable on the architecture and review
+```
+
+The skill will:
+- Keep the session model (Fable/Opus) on decomposition, architecture, synthesis, and review
+- Delegate scans, fetches, bounded patches, and tests to Haiku/Sonnet with a conservative quality floor
+- Use a file-based "context firewall" so sub-agent output doesn't bloat the orchestrator's context
+- Reach for the bundled budget-capped `frugal-research.js` workflow for cost-bounded deep research
+
+**Lanes:** research (tested end-to-end) · build/dev, testing, and debugging (sound guidance, newer — verify on your first few tasks).
+
+**Note:** "Fable" is just the marquee example — the skill uses *whatever model your session starts on* as the orchestrator (Opus works identically) and delegates down from there.
 
 ---
 
