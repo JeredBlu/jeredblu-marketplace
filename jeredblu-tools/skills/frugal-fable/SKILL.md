@@ -1,6 +1,6 @@
 ---
 name: frugal-fable
-description: Use when running on Claude Fable (or any premium model) and the work is token-heavy — building features, multi-file changes, research, testing, debugging, migrations, or anything spanning many files/sources. Keeps Fable on the judgment (decompose, architect, synthesize, review) and delegates bounded, verifiable heavy-lifting to cheaper models (Haiku/Sonnet/Opus) — with a quality floor so construction work is never owned by a weak agent. Triggers on requests to "be efficient with Fable", "don't burn tokens", orchestrate subagents, or delegate work.
+description: Use when running on Claude Fable (or any premium model) and the work is token-heavy — building features, multi-file changes, research, testing, debugging, migrations, or anything spanning many files/sources. Keeps Fable on the judgment (decompose, architect, synthesize, review) and delegates bounded, verifiable heavy-lifting to cheaper models (Haiku/Sonnet/Opus) — with a quality floor so construction work is never owned by a weak agent. Triggers on requests to "be efficient with Fable", "don't burn tokens", orchestrate subagents, or delegate work. Also fires on cross-CLI delegation: "delegate to Codex", "use Codex/GPT for this", "second opinion from Codex", or offloading work to a separate Codex/ChatGPT quota.
 ---
 
 # Frugal Fable
@@ -60,6 +60,7 @@ higher, never lower):
 | Scans, grep, repo/web inventory, log & test-output reduction, doc summaries | **Haiku** | low-stakes; sanity-check only |
 | Bounded, well-specified patches; adversarial verification; targeted tests | **Sonnet** | build + relevant tests pass |
 | Hard refactors, correctness/security-critical code, slices where Sonnet visibly struggles | **Opus** | Fable reviews the diff |
+| Any tier above, when the user has consented to Codex offload | **Codex** (tier-mapped — see `references/codex-delegation.md`) | same gate as the Claude tier it replaces |
 | Decompose, architect, coordinate, integrate, final review | **Fable** | — |
 
 **Conservative build floor (this project's default):** cheap models do mechanical
@@ -67,6 +68,25 @@ work and bounded patches that come with passing tests. Anything architectural,
 high-stakes, or one-way stays with **Opus or Fable**. When unsure which tier, go
 up one — a re-run on a cheap model that wasn't good enough costs more than starting
 at the right tier.
+
+## The second pool (Codex) — cross-CLI offload
+
+If the machine also has OpenAI's Codex CLI, its models run on a **separate
+subscription quota** — slices routed there consume no Claude usage at all.
+
+- **Consent gate — never assume.** The first time Codex routing would help,
+  check `codex --version`. Present → ask the user: "Codex is available — want
+  me to offload [named slices] to it? It won't touch your Claude usage."
+  Not installed → don't mention Codex at all. Declined → stay on Claude
+  models for the rest of the session without re-asking. Running unsupervised
+  (user away, can't answer)? Don't block — proceed on Claude models and
+  surface the Codex offer in your final summary for next time.
+- **Generous-quota routing.** Codex subscription limits are looser, so the
+  second pool inverts the penny-pinching: default to its construction tier
+  and escalate to its frontier tier freely for hard slices — never let a
+  weak model own work to save quota that's ample.
+- Tier map, exact `codex exec` recipes, sandbox rules, and gotchas:
+  `references/codex-delegation.md` — read it before the first Codex call.
 
 ## The context firewall (this is the main token saver)
 

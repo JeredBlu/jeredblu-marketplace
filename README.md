@@ -9,7 +9,7 @@ This marketplace provides skills that work across multiple AI coding tools:
 - **prd-creator**: Create comprehensive PRDs through conversational discovery
 - **agent-skill-evaluator**: Security and safety evaluation for agent skills
 - **mcp-evaluator**: Security and privacy evaluation for MCP servers
-- **frugal-fable**: Keep a premium model (Fable/Opus) on the judgment and delegate token-heavy work to cheaper models (Haiku/Sonnet) — for research, building, testing, and debugging
+- **frugal-fable**: Keep a premium model (Fable/Opus) on the judgment and delegate token-heavy work to cheaper models (Haiku/Sonnet) — for research, building, testing, and debugging. Have Codex CLI too? It can offload slices to GPT-5.6 (Sol/Terra/Luna) as a **second quota pool** — consent-gated, and zero Claude usage for the offloaded work
 
 Most skills utilize MCP servers for enhanced functionality and follow the open Agent Skills standard. **frugal-fable** additionally needs Claude Code's workflow + sub-agent orchestration for its full feature set (see the platform note under [Usage](#frugal-fable-1)).
 
@@ -36,7 +36,7 @@ Download skills individually for manual installation:
 | PRD Creator | [prd-creator.zip](./downloads/prd-creator.zip) | Conversational PRD generation |
 | Agent Skill Evaluator | [agent-skill-evaluator.zip](./downloads/agent-skill-evaluator.zip) | Security evaluation for skills |
 | MCP Evaluator | [mcp-evaluator.zip](./downloads/mcp-evaluator.zip) | Security evaluation for MCP servers |
-| Frugal Fable | [frugal-fable.zip](./downloads/frugal-fable.zip) | Premium-model orchestration + cheap-model delegation (full features: Claude Code) |
+| Frugal Fable | [frugal-fable.zip](./downloads/frugal-fable.zip) | Premium-model orchestration + cheap-model delegation, incl. cross-CLI Codex offload (full features: Claude Code) |
 
 ---
 
@@ -204,6 +204,23 @@ The skill will:
 **Lanes:** research · build/dev · testing · debugging. As with any delegation, the orchestrator reviews delegated work before relying on it (the built-in quality gate) — so you stay in control of what ships.
 
 **Note:** "Fable" is just the marquee example — the skill uses *whatever model your session starts on* as the orchestrator (Opus works identically) and delegates down from there.
+
+#### Cross-CLI: Codex as a second pool (new in 1.2.0)
+
+If you also have [OpenAI's Codex CLI](https://developers.openai.com/codex) installed and logged in, frugal-fable can delegate slices to Codex models — **GPT-5.6 Sol / Terra / Luna**, tier-mapped onto the same routing rules (Sol ≈ Opus-class, Terra ≈ Sonnet, Luna ≈ Haiku). Why this is more than a nice-to-have:
+
+- **It's a separate quota.** Codex runs on your ChatGPT subscription, so every slice routed there costs *zero* Claude usage — the frugal move isn't just "cheaper model," it's "different bill."
+- **Consent-gated.** The skill never routes to Codex on its own: it detects the CLI, asks you once per session, and stays silent on machines without Codex. If you're away when it would ask, it proceeds on Claude models and mentions the offer in its summary.
+- **Battle-tested mechanics.** Delegation uses synchronous `codex exec` with file-based reports (no context bloat), verified recipes for build slices, adversarial second opinions, repo/PR reviews, and same-session amendments — including fixes for real gotchas we hit (resumed Codex sessions silently revert to your config defaults; the recipes re-pin the sandbox every time).
+
+Try it naturally:
+```
+Delegate the heavy parts of this refactor to Codex
+Get a second opinion from Codex on this diff
+Build this, keep Claude on architecture, offload grunt work to my Codex quota
+```
+
+Requires: Claude Code as the orchestrator + `codex` CLI on PATH. Without Codex, nothing changes — the skill behaves exactly as before.
 
 ---
 
