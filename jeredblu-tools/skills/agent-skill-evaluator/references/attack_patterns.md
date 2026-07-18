@@ -2,6 +2,14 @@
 
 This document catalogs known prompt injection and malicious code patterns that may appear in agent skills.
 
+## Contents
+
+- **Prompt Injection Patterns** — system-prompt override, role manipulation, hidden Unicode, encoding obfuscation, conditional triggers, data-exfiltration instructions, markdown injection, output manipulation, privilege escalation, multi-turn injection
+- **Malicious Code Patterns** — network calls to unknown domains, system command execution, filesystem manipulation, credential harvesting, obfuscated code, backdoors, process injection
+- **Safe Patterns That May Look Suspicious** — legitimate system calls, file operations, external resources
+- **Detection Methodology** — context analysis, privilege assessment, transparency check, community verification
+- **Risk Mitigation**
+
 ## Prompt Injection Patterns
 
 ### 1. System Prompt Override Attempts
