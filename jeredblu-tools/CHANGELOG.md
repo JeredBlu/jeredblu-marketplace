@@ -1,5 +1,22 @@
 # Changelog — jeredblu-tools
 
+## 1.5.0 (2026-09-23)
+
+- **prd-creator: deeper, more conversational discovery.** Validated with a new
+  conversation eval (simulated users who only reveal key details when asked
+  the right question; blind-graded against the previous version — won on both).
+  - Back to **one question per message** (as in the original Claude project
+    prompt), with explicit rules for when to keep asking and when to stop —
+    typical interviews now run 12–22 questions instead of stopping early.
+  - **Big decisions are made with you, not silently:** platform, where data
+    lives, sign-in, and **build vs. buy** (starting with tools you already pay
+    for) are each presented as options with trade-offs and a recommendation.
+  - Budget reality checks (free-tier limits, app-store fees), deadline and
+    "who's building it" are now core discovery areas.
+  - New **Assumptions & Open Questions** section: guesses are never presented
+    as requirements. PRDs are right-sized instead of padded.
+  - Works in any harness (Claude Code, Codex, chat apps) — no separate ports needed.
+
 ## 1.4.0 (2026-09-23)
 
 - **New skill: repo-evaluator** — pre-install safety check for any open-source

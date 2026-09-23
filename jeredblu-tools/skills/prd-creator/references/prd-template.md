@@ -443,20 +443,37 @@ Use this template as the base structure for all PRDs. Adapt sections based on pr
 
 ---
 
-## 11. Appendix
+## 11. Assumptions & Open Questions
 
-### 11.1 Glossary
+Anything the PRD relies on that the user did not explicitly confirm. Never present these as requirements.
+
+### 11.1 Assumptions
+
+| Assumption | Why we assumed it | Impact if wrong |
+|------------|-------------------|-----------------|
+| [e.g. English-only UI] | [Not discussed; single-country launch] | [Low — strings externalized] |
+
+### 11.2 Open Questions
+
+- [ ] [Question to resolve before build — owner]
+- [ ] [Question that can be resolved during build]
+
+---
+
+## 12. Appendix
+
+### 12.1 Glossary
 
 - **Term:** Definition
 - **Term:** Definition
 
-### 11.2 References
+### 12.2 References
 
 - [Link to relevant documentation]
 - [Link to competitor analysis]
 - [Link to user research]
 
-### 11.3 Change Log
+### 12.3 Change Log
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|

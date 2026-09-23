@@ -122,9 +122,10 @@ Create product requirements for [project description]
 ```
 
 The skill will:
-- Guide you through discovery questions (problem, users, features)
-- Research relevant technologies via MCP servers
-- Generate structured PRD with all sections
+- Interview you one question at a time (typically 12–20 questions) across 11 areas — features, users, platform, data, sign-in & privacy, integrations, scale, risks, budget/timeline/who's building, design, existing materials — and follow up on the details that matter
+- Offer options with plain-language trade-offs and a recommendation for the big decisions (platform, data, sign-in, build vs. buy)
+- Research current pricing and free-tier limits so the plan fits your budget
+- Confirm a summary with you before writing, then generate a right-sized PRD with acceptance criteria, data models, and an Assumptions & Open Questions section
 - Support iterative refinement
 
 **Output includes:**

@@ -145,7 +145,7 @@ Use when no MCP search tools are available.
 
 ### During Discovery Phase
 
-1. **Use AskUserQuestion** (Claude Code) or conversation (Desktop) to gather requirements
+1. **Use the harness's question tool** (e.g. AskUserQuestion in Claude Code, request_user_input in Codex) or plain conversation to gather requirements
 2. **Use web search** if user mentions unfamiliar technology
 3. **Check Context7** for library-specific documentation
 
