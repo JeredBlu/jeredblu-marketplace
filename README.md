@@ -9,6 +9,7 @@ This marketplace provides skills that work across multiple AI coding tools:
 - **prd-creator**: Create comprehensive PRDs through conversational discovery
 - **agent-skill-evaluator**: Security and safety evaluation for agent skills
 - **mcp-evaluator**: Security and privacy evaluation for MCP servers
+- **repo-evaluator**: Is this GitHub project safe to install? Checks what it does to your computer, who it talks to, and whether it's shady — without ever installing or running it
 - **frugal-fable**: Keep a premium model (Fable/Opus) on the judgment and delegate token-heavy work to cheaper models (Haiku/Sonnet) — for research, building, testing, and debugging. Have Codex CLI too? It can offload slices to GPT-5.6 (Sol/Terra/Luna) as a **second quota pool** — consent-gated, and zero Claude usage for the offloaded work
 
 Most skills utilize MCP servers for enhanced functionality and follow the open Agent Skills standard. **frugal-fable** additionally needs Claude Code's workflow + sub-agent orchestration for its full feature set (see the platform note under [Usage](#frugal-fable-1)).
@@ -36,6 +37,7 @@ Download skills individually for manual installation:
 | PRD Creator | [prd-creator.zip](./downloads/prd-creator.zip) | Conversational PRD generation |
 | Agent Skill Evaluator | [agent-skill-evaluator.zip](./downloads/agent-skill-evaluator.zip) | Security evaluation for skills |
 | MCP Evaluator | [mcp-evaluator.zip](./downloads/mcp-evaluator.zip) | Security evaluation for MCP servers |
+| Repo Evaluator | [repo-evaluator.zip](./downloads/repo-evaluator.zip) | Pre-install safety check for any GitHub project |
 | Frugal Fable | [frugal-fable.zip](./downloads/frugal-fable.zip) | Premium-model orchestration + cheap-model delegation, incl. cross-CLI Codex offload (full features: Claude Code) |
 
 ---
@@ -87,6 +89,12 @@ The skills work best with MCP servers. Both are optional but highly recommended 
 - [See Github Page for Install Instructions](https://github.com/brightdata/brightdata-mcp)
 - Requires: Bright Data API token
 - [Create BRD Account with my Link (you might get some extra free credits)](https://tinyurl.com/jeredwebmcp)
+
+**Bright Data CLI (alternative to the MCP)**
+- `npm i -g @brightdata/cli`, then `bdata login` — used by repo-evaluator for web search (`bdata search`)
+
+**GitHub CLI (`gh`) — required for repo-evaluator**
+- [Install](https://cli.github.com/), then `gh auth login`
 
 **Context7 MCP Server (Optional)**
 - Enables documentation lookup for technology research
@@ -178,6 +186,35 @@ The evaluator will:
 - Multi-dimensional scoring
 - Usability assessment
 
+### Repo Evaluator
+
+Check any open-source project on GitHub **before** you install it:
+
+```
+Is this safe to install? https://github.com/owner/project
+Evaluate this repo before I brew install it: https://github.com/owner/tool
+The README says to run a curl | sh command — is that safe? https://github.com/owner/repo
+```
+
+The evaluator will:
+- Clone the repo inertly (no hooks, no submodules) — it never installs, builds, or runs anything
+- Evaluate the install path you'd actually use (Homebrew recipe, `curl | sh` script, npm/pip package, release download)
+- Scan for 20+ danger categories and list every web address the code references
+- Check dependencies for known vulnerabilities (OSV.dev) and risky sources
+- Check the maintainer, releases, security advisories, look-alike repos, and community reviews
+- Optionally inspect a release .zip/.dmg/.pkg without opening it (asks before downloading)
+
+**Features:**
+- Install-time hooks, start-at-login, sudo/admin use, Gatekeeper/quarantine bypass
+- Phone-home, telemetry (and whether it's on by default + how to turn it off)
+- Credential access, keylogging, screen/clipboard capture
+- Self-promo: affiliate links, auto-starring your GitHub, branding injected into your output
+- Obfuscation, hidden Unicode, committed binaries, crypto-miners
+- "Is the binary you install the source that was reviewed?" (CI-built vs built on someone's laptop)
+- Plain-English verdict: what it is, what it does to your computer, who it talks to, should you install
+
+**Requires:** GitHub CLI (`gh`) logged in (`gh auth login`). Web search via Bright Data CLI or MCP recommended; falls back to built-in search.
+
 ### Frugal Fable
 
 > **Platform note:** Full functionality requires **Claude Code** (a Fable-class runtime with workflow + sub-agent orchestration). On Claude Desktop, Codex, or OpenCode the written delegation guidance still applies, but the bundled budget-capped research workflow won't run.
@@ -234,6 +271,7 @@ Skills work without MCP servers but with reduced functionality:
 | No Bright Data | Uses built-in web search (limited) |
 | No Pro Mode | No Reddit scraping, basic search only |
 | No Context7 | Manual documentation lookup |
+| No `gh` login (repo-evaluator) | Stops and asks you to run `gh auth login` |
 
 **Example: Without MCPs**
 ```
@@ -255,6 +293,7 @@ Claude: Direct repo access, full code review, Reddit community
 
 - Claude Code, Claude Desktop, VS Code, Cursor, Codex, or OpenCode
 - GitHub Personal Access Token (recommended)
+- GitHub CLI (`gh`) logged in (required for repo-evaluator)
 - Bright Data API token (recommended, for Reddit scraping)
 
 ---

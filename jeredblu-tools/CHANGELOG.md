@@ -1,5 +1,25 @@
 # Changelog — jeredblu-tools
 
+## 1.4.0 (2026-09-23)
+
+- **New skill: repo-evaluator** — pre-install safety check for any open-source
+  project on GitHub (apps, CLIs, libraries, scripts, dotfiles). Never installs
+  or runs the target: clones it inertly, then scans for install-time hooks,
+  persistence, sudo/privilege use, phone-home and telemetry (incl. whether it's
+  on by default), credential access, keylogging/screen capture, self-promo
+  (affiliate links, auto-starring your GitHub), obfuscation, committed binaries,
+  dependency vulns (OSV.dev), release-binary vs source mismatch, and maintainer
+  reputation. Delivers a plain-English verdict: what it is, what installing it
+  does to your computer, who it talks to, and whether to install.
+- Bundled read-only scripts: `fetch.sh`, `scan.sh`, `deps.py`, `repo_meta.py`,
+  `inspect_artifact.sh` (inspects release .zip/.dmg/.pkg without running them).
+- Requires the GitHub CLI (`gh`) logged in. Web search: Bright Data CLI or MCP
+  recommended; falls back to built-in search.
+
+## 1.3.0 (2026-07-18)
+
+- agent-skill-evaluator v1.3.0: bundled precision scanner + exhaustive coverage.
+
 ## 1.2.0 (2026-07-17)
 
 - **frugal-fable: cross-CLI Codex delegation ("the second pool").** If OpenAI's
