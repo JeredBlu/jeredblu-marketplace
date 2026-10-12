@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.2.1 — 2026-10-12
+- Cargo.lock source-less workspace/path records are inventoried separately and never queried as crates.io packages. Git/alternate registry sources stay explicit manual-review gaps rather than being mapped by name to crates.io.
+- Star-history output now says NOT CHECKED; removed the unsupported universal claim about GitHub timestamp availability.
+- Added regressions for same-name local/registry packages, local-only projects, alternate sources, malformed Cargo records, manifest provenance and truthful star-history status. Rechecked the saved FilmCraft lockfile against live OSV.
+
 ## 1.2.0 — 2026-10-12
 - Rubric 1.1.0 gives a numeric reviewed-evidence score normalized over assessed checks, with separate coverage, unknowns and scope. Severity caps still apply; no-evidence reviews do not invent a score.
 - Partial reviews use REVIEWED WITH LIMITATIONS or an adverse verdict, not an automatic overall INCOMPLETE label.
@@ -20,7 +25,7 @@
 - `fetch.sh`: non-executing clone (temp dir, no hooks/submodules/LFS, optional tag).
 - `scan.sh`: 20 danger categories + domain inventory + build-time code list + recent sensitive-file authors. Pins `/usr/bin/grep`; bash 3.2 compatible.
 - `deps.py`: lockfile parsing (npm, PyPI, crates, Go, SwiftPM), git/URL deps, install-script deps, OSV.dev vuln lookup.
-- `repo_meta.py`: repo/owner provenance, contributor concentration, release uploader (CI vs human), advisories, trust-keyword issue search, look-alikes, HN, registry cross-check. Stargazer timing unavailable (GitHub API 404s since 2026).
+- `repo_meta.py`: repo/owner provenance, contributor concentration, release uploader (CI vs human), advisories, trust-keyword issue search, look-alikes, HN, registry cross-check. Historical version reported stargazer timing unavailable; that unsupported assertion was removed in 1.2.1.
 - `inspect_artifact.sh`: release zip/tar/dmg/pkg inspection without execution; signature, notarization, entitlements, helpers, dylibs, binary-only hosts vs source.
 - Calibrated on nikitabobko/AeroSpace + an inert synthetic malicious fixture (all 11 planted categories detected).
 - Requirements & tool strategy section (matches mcp-evaluator / agent-skill-evaluator): `gh` logged in = required, with a preflight check; web search order is Bright Data CLI → Bright Data MCP → other search MCP → built-in; osv-scanner and macOS are optional.

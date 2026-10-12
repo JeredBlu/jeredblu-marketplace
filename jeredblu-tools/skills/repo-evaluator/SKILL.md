@@ -1,7 +1,7 @@
 ---
 name: repo-evaluator
 metadata:
-  version: "1.2.0"
+  version: "1.2.1"
 description: Evidence-led pre-install review of GitHub software without executing the target. Inspect install paths, code behavior, data flows, dependencies, provenance and agent instructions; produce a versioned per-check risk rubric with explicit coverage and uncertainty. Use when the user asks whether a repo is safe, legitimate or worth installing. For a skill or MCP-only review prefer the corresponding evaluator; this skill can additionally review its code.
 ---
 

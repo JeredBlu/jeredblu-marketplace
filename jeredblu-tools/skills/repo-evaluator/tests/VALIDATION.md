@@ -1,4 +1,4 @@
-# Repo Evaluator 1.2.0 validation
+# Repo Evaluator 1.2.1 validation
 
 Validated locally on macOS on 2026-10-12. Rubric version: 1.1.0.
 
@@ -12,14 +12,14 @@ python3 -B -m unittest discover -s jeredblu-tools/skills/repo-evaluator/tests -v
 
 ## Results
 
-- Python 3.14.6: **50 tests passed** (including parameterized/subtest cases).
-- macOS system Python 3.9.6: **49 passed, 1 skipped**. The TOML-success test is
+- Python 3.14.6: **56 tests passed** (including parameterized/subtest cases).
+- macOS system Python 3.9.6: **50 passed, 6 skipped**. TOML-success tests are
   intentionally skipped because 3.9 lacks `tomllib`; the missing-parser warning
   regression still runs and passes.
 - Shell syntax checks: `bash -n` on all three shell helpers passed.
 - Skill frontmatter/structure validator passed using an existing PyYAML-enabled
   environment. No packages were installed. Version is under `metadata.version`.
-- Download ZIP: all 18 packaged files match the source byte-for-byte; all 50 tests
+- Download ZIP: all 18 packaged files match the source byte-for-byte; all 56 tests
   also passed from a fresh extraction using the archive validation helper.
 - Public HTTPS fetch smoke test succeeded against JeredBlu/jeredblu-marketplace
   revision `8946664033ea20cc9b0ccd8b10c11b4a113c690b` without building/installing it.
@@ -65,13 +65,26 @@ calibration of weights, model consistency, or security certification. No target
 repository code or fixture payload was executed. Live OSV failure handling uses
 mocked responses; notarization, DMG/PKG parsers and actual release/source equivalence
 were not validated against a corpus of production artifacts. No Jev call or other
-hosted semantic-review integration was introduced. Changes are local until published.
+hosted semantic-review integration was introduced. Publication status is reported separately; validation does not itself publish a release.
 
-## Known field-test follow-ups (not fixed by this scoring change)
+## Field-test fixes verified in 1.2.1
 
-Cargo workspace-only packages can be misclassified as crates.io dependencies in
-`deps.py`, and `repo_meta.py` contains an unverified blanket claim about stargazer
-timestamp availability. The FilmCraft review manually corrected package counts
-and excluded that metadata assertion. Neither passing tests nor this scoring
-update proves those issues resolved. Target/feature-specific Cargo advisory
-applicability also still requires manual review.
+- Re-read FilmCraft v0.6.0 preserved Cargo.lock from the exact audited revision:
+  701 records = 652 crates.io entries + 49 local/workspace/path entries.
+  The corrected helper queried only the 652 registry packages; the 49 local
+  packages are separately inventoried with their manifest paths.
+- Live OSV rerun completed for those 652 candidates. The helper still reports
+  incomplete scope for unparsed manifests/local source review, not a false clean
+  bill of health. This is not a target/feature-resolved advisory assessment.
+- Local packages sharing a name/version with a registry package, all-local
+  projects, Git/private/spoofed registries, malformed entries and nested lockfile
+  provenance have regression coverage.
+- Star timing explicitly says NOT CHECKED, without making an API-availability
+  claim or performing an unreported request. No star-history evidence informs
+  the FilmCraft score.
+- Saved FilmCraft evidence still yields 86/100 on assessed checks, 89% weighted
+  coverage under unchanged rubric 1.1.0. No package downloaded or opened.
+
+Target/feature-specific Cargo advisory applicability still requires manual
+review. The two identified helper bugs are fixed; this does not claim exhaustive
+vulnerability coverage or empirical scoring calibration.

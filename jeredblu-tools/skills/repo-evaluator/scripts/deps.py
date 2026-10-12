@@ -27,6 +27,7 @@ LOCKS = {'package-lock.json', 'yarn.lock', 'pnpm-lock.yaml', 'poetry.lock', 'uv.
 SUPPORTED = {'package.json', 'package-lock.json', 'poetry.lock', 'uv.lock', 'Cargo.lock',
              'go.sum', 'Package.resolved', 'Pipfile.lock'}
 MAX_BYTES = 8 * 1024 * 1024
+CARGO_REGISTRY = 'registry+https://github.com/rust-lang/crates.io-index'
 
 
 def osv(pkgs):
@@ -54,9 +55,12 @@ def osv(pkgs):
 
 def parse(name, text, output):
     pinned, sources, scripts, notes = output['packages'], output['unusual_sources'], output['install_scripts'], output['notes']
-    def add(eco, n, v):
+    def identity(n, v):
         if not isinstance(n, str) or not isinstance(v, str) or not n or not v:
             raise ValueError('invalid package name/version')
+        return n, v
+    def add(eco, n, v):
+        identity(n, v)
         pinned.append((eco, n, v))
     if name == 'package.json':
         obj = json.loads(text)
@@ -113,15 +117,27 @@ def parse(name, text, output):
             raise ValueError('missing package list in TOML lockfile')
         for package in obj['package']:
             source = package.get('source')
+            if name == 'Cargo.lock':
+                n, v = identity(package['name'], package['version'])
+                if 'source' not in package:
+                    output.setdefault('local_packages', []).append({'name': n, 'version': v})
+                    notes.append(f'local/workspace or path package requires source review, not crates.io lookup: {n}@{v}')
+                elif not isinstance(source, str) or not source:
+                    raise ValueError('invalid Cargo package source')
+                elif source == CARGO_REGISTRY:
+                    add('crates.io', n, v)
+                else:
+                    sources.append(f'{n}@{v}: {source}')
+                    notes.append(f'non-crates.io Cargo source requires manual advisory mapping: {n}@{v}')
+                continue
             if isinstance(source, dict) and ('editable' in source or 'virtual' in source):
                 notes.append('local/workspace package requires manual review: ' + str(package.get('name')))
                 continue
-            add('crates.io' if name == 'Cargo.lock' else 'PyPI', package['name'], package['version'])
+            add('PyPI', package['name'], package['version'])
             if source:
                 value = source if isinstance(source, str) else json.dumps(source)
                 # These are leads, not proof of a trustworthy source.
-                if not (value == 'registry+https://github.com/rust-lang/crates.io-index' or
-                        isinstance(source, dict) and source.get('registry') == 'https://pypi.org/simple'):
+                if not (isinstance(source, dict) and source.get('registry') == 'https://pypi.org/simple'):
                     sources.append(f'{package["name"]}: {value}')
     elif name == 'go.sum':
         for line in text.splitlines():
@@ -159,7 +175,7 @@ def inspect(root, offline=False):
     root = Path(root).resolve()
     if not root.is_dir():
         raise ValueError('target must be a directory')
-    result = {'status': 'complete', 'files': [], 'packages': [], 'unusual_sources': [], 'install_scripts': [],
+    result = {'status': 'complete', 'files': [], 'packages': [], 'local_packages': [], 'unusual_sources': [], 'install_scripts': [],
               'notes': [], 'errors': [], 'skipped_directories': [], 'osv': {'status': 'not_run', 'findings': []}}
     def walk_error(exc):
         result['errors'].append(str(exc))
@@ -193,10 +209,13 @@ def inspect(root, offline=False):
                     data = stream.read(MAX_BYTES + 1)
                 if len(data) > MAX_BYTES:
                     raise ValueError('manifest exceeds size limit')
-                local = {'packages': [], 'unusual_sources': [], 'install_scripts': [], 'notes': []}
+                local = {'packages': [], 'local_packages': [], 'unusual_sources': [], 'install_scripts': [], 'notes': []}
                 parse(name, data.decode('utf-8'), local)
                 for key, values in local.items():
-                    result[key].extend(values if key == 'packages' else [item['path'] + ': ' + v for v in values])
+                    if key == 'local_packages':
+                        result[key].extend({**v, 'manifest': item['path']} for v in values)
+                    else:
+                        result[key].extend(values if key == 'packages' else [item['path'] + ': ' + v for v in values])
             except (ValueError, OSError, KeyError, TypeError, AttributeError, RecursionError) as exc:
                 item.update(status='failed', reason=str(exc))
                 result['errors'].append(item['path'] + ': ' + str(exc))
@@ -235,6 +254,7 @@ def main():
     if not args.json:
         print('== Dependency evidence: ' + result['status'].upper() + ' ==')
         print('Listed manifests are not necessarily parsed. OSV findings cover parsed package versions only.')
+        print(f"Advisory query candidates: {len(result['packages'])}; Cargo local/path records: {len(result['local_packages'])} (not sent to OSV).")
     print(json.dumps(result, indent=2))
     return 3 if result['status'] == 'incomplete' else 0
 

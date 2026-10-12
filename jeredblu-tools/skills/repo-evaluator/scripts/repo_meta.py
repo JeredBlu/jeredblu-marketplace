@@ -3,7 +3,7 @@
 repo_meta.py — provenance & reputation dump for the repo-evaluator skill.
 
 SAFETY CONTRACT: read-only lookups — GitHub API via `gh api`, HN Algolia, and registry
-metadata (npm view / PyPI JSON / crates.io JSON). Never installs or runs anything.
+metadata (npm / PyPI / crates.io JSON). Never installs or runs anything.
 
 Usage: repo_meta.py <github-url | owner/repo> [checkout_dir]
   checkout_dir (optional) enables the registry cross-check: does the published
@@ -75,6 +75,13 @@ def days_since(iso):
 
 def sec(t):
     print(f"\n### {t}")
+
+
+def star_timing():
+    """Star history is outside this helper's checked scope; no API claim inferred."""
+    sec("Star timing")
+    print("  NOT CHECKED: historical stargazer timestamps/growth curve were not queried by this helper.")
+    print("  Current totals are not evidence of organic or manipulated growth; no API-availability conclusion is made.")
 
 
 def parse_spec(s):
@@ -177,9 +184,7 @@ def main():
             print(f"      [{it['state']}] {it['created_at'][:10]} {it['title'][:95]}  {it['html_url']}")
         time.sleep(2.1)  # search API: 30 req/min
 
-    sec("Star timing")
-    print("  GitHub no longer exposes stargazer lists/timestamps (404 as of 2026-09). If stars look")
-    print("  inflated vs forks/issues/contributors, check the curve at https://star-history.com/#" + R)
+    star_timing()
 
     sec("Look-alikes (is this the ORIGINAL? copycat forks with near-identical names are a common trap)")
     q = urllib.parse.quote(f"{name} in:name")

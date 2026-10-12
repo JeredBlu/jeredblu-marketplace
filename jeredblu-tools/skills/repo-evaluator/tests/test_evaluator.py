@@ -326,8 +326,60 @@ class DependencyTests(unittest.TestCase):
     @unittest.skipIf(deps.tomllib is None,'requires Python 3.11 TOML parser')
     def test_rust_and_python_locks(self):
         for name,eco in [('Cargo.lock','crates.io'),('poetry.lock','PyPI'),('uv.lock','PyPI')]:
-            r=self.inspect_file(name,'[[package]]\nname="demo"\nversion="1.2.3"\n')
+            content='[[package]]\nname="demo"\nversion="1.2.3"\n'
+            if name == 'Cargo.lock': content += 'source="' + deps.CARGO_REGISTRY + '"\n'
+            r=self.inspect_file(name,content)
             self.assertEqual(r['packages'],[(eco,'demo','1.2.3')])
+
+    @unittest.skipIf(deps.tomllib is None,'requires Python 3.11 TOML parser')
+    def test_cargo_workspace_and_registry_same_name_are_distinct(self):
+        content = '[[package]]\nname="same-name"\nversion="1.2.3"\n'
+        content += content + 'source="' + deps.CARGO_REGISTRY + '"\n'
+        with patch.object(deps, 'osv', return_value=[]) as query:
+            r = self.inspect_file('Cargo.lock', content, False)
+        query.assert_called_once_with([('crates.io', 'same-name', '1.2.3')])
+        self.assertEqual(r['local_packages'], [{'name':'same-name','version':'1.2.3','manifest':'Cargo.lock'}])
+        self.assertEqual(r['files'][0]['status'], 'parsed')
+        self.assertEqual(r['status'], 'incomplete')  # Local source still needs review.
+
+    @unittest.skipIf(deps.tomllib is None,'requires Python 3.11 TOML parser')
+    def test_cargo_local_only_never_queries_osv(self):
+        with patch.object(deps, 'osv') as query:
+            r = self.inspect_file('Cargo.lock', '[[package]]\nname="local"\nversion="1.0.0"\n', False)
+        query.assert_not_called()
+        self.assertEqual(r['packages'], [])
+        self.assertEqual(len(r['local_packages']), 1)
+        self.assertEqual(r['osv']['status'], 'not_checked_no_resolved_packages')
+
+    @unittest.skipIf(deps.tomllib is None,'requires Python 3.11 TOML parser')
+    def test_cargo_git_and_alternative_registry_not_queried_as_crates_io(self):
+        for source in ('git+https://github.com/example/pkg#abc',
+                       'registry+https://private.example/index', deps.CARGO_REGISTRY + '.evil'):
+            with self.subTest(source=source), patch.object(deps, 'osv') as query:
+                content = '[[package]]\nname="pkg"\nversion="1.0.0"\nsource="' + source + '"\n'
+                r = self.inspect_file('Cargo.lock', content, False)
+                query.assert_not_called()
+                self.assertFalse(r['packages'])
+                self.assertTrue(r['unusual_sources'])
+                self.assertTrue(r['notes'])
+
+    @unittest.skipIf(deps.tomllib is None,'requires Python 3.11 TOML parser')
+    def test_malformed_cargo_local_identity_or_source_fails(self):
+        for fields in ('name="x"', 'name=42\nversion="1.0"',
+                       'name="x"\nversion="1.0"\nsource=""',
+                       'name="x"\nversion="1.0"\nsource={registry="bad"}'):
+            r = self.inspect_file('Cargo.lock', '[[package]]\n' + fields)
+            self.assertEqual(r['files'][0]['status'], 'failed')
+            self.assertFalse(r['packages'])
+
+    @unittest.skipIf(deps.tomllib is None,'requires Python 3.11 TOML parser')
+    def test_nested_cargo_local_packages_keep_manifest_provenance(self):
+        with tempfile.TemporaryDirectory() as td:
+            for directory in ('one', 'two'):
+                p = Path(td) / directory; p.mkdir()
+                (p/'Cargo.lock').write_text('[[package]]\nname="local"\nversion="1.0"\n')
+            r = deps.inspect(td, True)
+            self.assertEqual({p['manifest'] for p in r['local_packages']}, {'one/Cargo.lock','two/Cargo.lock'})
 
     def test_requirements_unresolved_preserved(self):
         r=self.inspect_file('requirements.txt','safe==1.2.3\nother>=2\n-r private.txt\n')
@@ -419,6 +471,16 @@ class ArchiveTests(unittest.TestCase):
 
 class MetadataTests(unittest.TestCase):
     def setUp(self):meta.FAILURES.clear()
+    def test_star_history_unchecked_has_no_api_claim_or_request(self):
+        out = io.StringIO()
+        with patch.object(meta, 'gh') as api, contextlib.redirect_stdout(out):
+            meta.star_timing()
+        api.assert_not_called()
+        self.assertIn('NOT CHECKED', out.getvalue())
+        self.assertIn('were not queried', out.getvalue())
+        self.assertNotIn('no longer exposes', out.getvalue())
+        self.assertNotIn('404', out.getvalue())
+        self.assertFalse(meta.FAILURES)
     def test_manifest_symlink_and_invalid_json_not_silently_ignored(self):
         with tempfile.TemporaryDirectory() as td:
             p=Path(td)/'package.json';p.symlink_to('/etc/hosts')
