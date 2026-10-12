@@ -17,12 +17,21 @@
 #   a host that appears ONLY in the binary is a red flag (binary ≠ reviewed source).
 
 set -uo pipefail
+SCRIPT_DIR="$(cd -- "$(dirname -- "$0")" && pwd)"
 F="${1:-}"; SRC="${2:-}"
 [[ -f "$F" || -d "$F" ]] || { echo "usage: inspect_artifact.sh <file> [source_checkout_dir]" >&2; exit 2; }
+F="$(cd -- "$(dirname -- "$F")" && pwd)/$(basename -- "$F")"
+INCOMPLETE=0
+for tool in file shasum strings codesign spctl otool plutil; do
+  if ! command -v "$tool" >/dev/null 2>&1; then
+    echo "NOT PERFORMED: $tool unavailable; affected artifact checks remain incomplete." >&2
+    INCOMPLETE=1
+  fi
+done
 G=/usr/bin/grep; [[ -x "$G" ]] || G="$(command -v grep)"
 WORK="$(mktemp -d "${TMPDIR:-/tmp}/artifact.XXXXXX")"
 MNT=""
-cleanup() { [[ -n "$MNT" ]] && hdiutil detach -quiet "$MNT" 2>/dev/null; }
+cleanup() { if [[ -n "$MNT" ]]; then hdiutil detach -quiet "$MNT" 2>/dev/null || echo "WARN: detach failed: $MNT" >&2; fi; }
 trap cleanup EXIT
 
 echo "== repo-evaluator :: artifact inspection (nothing is executed) =="
@@ -33,23 +42,21 @@ echo "file:   $F"
 ROOT="$F"
 case "$F" in
   *.zip)
-    echo; echo "### zip listing (entries with ../ or absolute paths = zip-slip attempt)"
-    unzip -Z1 "$F" | head -n 40
-    unzip -Z1 "$F" | "$G" -E '(^/|\.\./)' && echo "  !! PATH-TRAVERSAL ENTRIES"
-    unzip -qq "$F" -d "$WORK" 2>/dev/null; ROOT="$WORK" ;;
+    python3 -I "$SCRIPT_DIR/safe_archive.py" "$F" "$WORK/extracted" || exit 3
+    ROOT="$WORK/extracted" ;;
   *.tar.gz|*.tgz|*.tar.xz|*.tar.bz2|*.tar)
-    echo; echo "### tar listing"
-    tar -tf "$F" | head -n 40
-    tar -tf "$F" | "$G" -E '(^/|\.\./)' && echo "  !! PATH-TRAVERSAL ENTRIES"
-    tar -xf "$F" -C "$WORK" 2>/dev/null; ROOT="$WORK" ;;
+    python3 -I "$SCRIPT_DIR/safe_archive.py" "$F" "$WORK/extracted" || exit 3
+    ROOT="$WORK/extracted" ;;
   *.dmg)
     echo; echo "### dmg (attached read-only, no auto-open)"
     MNT="$WORK/mnt"; mkdir -p "$MNT"
-    hdiutil attach -readonly -nobrowse -noautoopen -noverify -mountpoint "$MNT" "$F" >/dev/null 2>&1 \
-      && ls -la "$MNT" | head -n 20 && ROOT="$MNT" || echo "  attach failed" ;;
+    hdiutil attach -readonly -nobrowse -noautoopen -mountpoint "$MNT" "$F" >/dev/null 2>&1 \
+      || { echo "ARTIFACT INSPECTION BLOCKED: attach failed" >&2; exit 3; }
+    ROOT="$MNT" ;;
   *.pkg)
     echo; echo "### pkg — install scripts (these run as ROOT on install; read them in full)"
-    pkgutil --expand-full "$F" "$WORK/pkg" 2>/dev/null
+    pkgutil --expand-full "$F" "$WORK/pkg" 2>/dev/null \
+      || { echo "ARTIFACT INSPECTION BLOCKED: pkg expansion failed" >&2; exit 3; }
     find "$WORK/pkg" -type f \( -name 'preinstall' -o -name 'postinstall' -o -name 'preflight' -o -name 'postflight' -o -path '*Scripts*' \) \
       | head -n 20 | sed 's/^/  /'
     pkgutil --check-signature "$F" 2>&1 | head -n 8 | sed 's/^/  /'
@@ -57,6 +64,9 @@ case "$F" in
 esac
 
 echo; echo "### Code signatures & notarization (per app bundle / Mach-O)"
+if [[ "$(uname -s)" != Darwin ]]; then
+  echo "NOT PERFORMED: macOS signature/notarization/linked-library checks unavailable on this host."
+fi
 TARGETS="$(find "$ROOT" -maxdepth 4 -name '*.app' -type d 2>/dev/null | head -n 5)"
 [[ -z "$TARGETS" ]] && TARGETS="$(find "$ROOT" -type f -size +10k 2>/dev/null | head -n 400 \
   | xargs file --mime-type 2>/dev/null | "$G" -E 'x-mach-binary|x-executable|x-sharedlib|x-pie-executable|x-dosexec' | sed 's/: .*//' | head -n 5)"
@@ -73,7 +83,7 @@ while IFS= read -r t; do
   fi
 done <<< "$TARGETS"
 
-echo; echo "### Linked libraries (unexpected dylibs = injected code)"
+echo; echo "### Linked libraries (unexpected dylibs require investigation; not proof of injection)"
 while IFS= read -r t; do
   [[ -z "$t" ]] && continue
   bin="$t"; [[ -d "$t" ]] && bin="$t/Contents/MacOS/$(plutil -extract CFBundleExecutable raw "$t/Contents/Info.plist" 2>/dev/null)"
@@ -91,3 +101,6 @@ if [[ -n "$SRC" && -d "$SRC" ]]; then
   comm -23 "$WORK/bin_hosts" "$WORK/src_hosts" | "$G" -vE '(apple\.com|w3\.org|openssl\.org|swift\.org|github\.com)$' | sed 's/^/  /' | head -n 40
 fi
 echo; echo "== end artifact inspection =="
+echo "LIMITS: up to 5 signature targets, 400 candidate files, 2000 files for embedded hosts. This is not proof of source/binary equivalence."
+echo "Inspection scratch (remove after saving needed evidence): $WORK"
+if [[ "$INCOMPLETE" == 1 ]]; then exit 3; fi

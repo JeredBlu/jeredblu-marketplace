@@ -40,7 +40,10 @@ DEST="$(mktemp -d "${TMPDIR:-/tmp}/repo-eval.XXXXXX")"
 BRANCH_ARGS=()
 [[ -n "$REF" ]] && BRANCH_ARGS=(--branch "$REF")
 
-GIT_LFS_SKIP_SMUDGE=1 GIT_TERMINAL_PROMPT=0 GIT_CONFIG_NOSYSTEM=1 git \
+# Ignore user/system filter configuration as well as hooks. Public HTTPS repos only;
+# this deliberately does not inherit credential helpers for private repositories.
+GIT_LFS_SKIP_SMUDGE=1 GIT_TERMINAL_PROMPT=0 GIT_CONFIG_NOSYSTEM=1 GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_COUNT=0 git \
+  -c init.templateDir= \
   -c core.hooksPath=/dev/null \
   -c core.fsmonitor=false \
   -c protocol.file.allow=never \
@@ -51,6 +54,7 @@ GIT_LFS_SKIP_SMUDGE=1 GIT_TERMINAL_PROMPT=0 GIT_CONFIG_NOSYSTEM=1 git \
 
 SRC="$DEST/src"
 echo "repo:    $R"
+echo "revision: $(git -C "$SRC" rev-parse HEAD)"
 echo "commit:  $(git -C "$SRC" log -1 --format='%h %ad %an' --date=short)"
 echo "files:   $(find "$SRC" -path "$SRC/.git" -prune -o -type f -print | wc -l | tr -d ' ')"
 echo "size:    $(du -sh "$SRC" 2>/dev/null | cut -f1) (incl. .git)"

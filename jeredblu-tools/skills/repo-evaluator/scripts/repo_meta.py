@@ -9,7 +9,8 @@ Usage: repo_meta.py <github-url | owner/repo> [checkout_dir]
   checkout_dir (optional) enables the registry cross-check: does the published
   package actually point back to THIS repo?
 """
-import datetime as dt, json, os, re, subprocess, sys, time, urllib.parse, urllib.request
+import datetime as dt, json, os, re, stat, subprocess, sys, time, urllib.parse, urllib.request
+FAILURES = []
 
 try:
     import tomllib
@@ -17,11 +18,19 @@ except ImportError:
     tomllib = None
 
 
-def gh(path, *extra):
+def gh(path, *extra, optional_missing=False):
     try:
         out = subprocess.run(["gh", "api", *extra, path], capture_output=True, text=True, timeout=60)
-        return json.loads(out.stdout) if out.returncode == 0 and out.stdout.strip() else None
-    except Exception:
+        if out.returncode == 0 and out.stdout.strip():
+            return json.loads(out.stdout)
+        if optional_missing and 'HTTP 404' in out.stderr:
+            return None
+        FAILURES.append(path + ': ' + (out.stderr.strip() or 'empty response'))
+        print('  NOT CHECKED: ' + FAILURES[-1])
+        return None
+    except Exception as exc:
+        FAILURES.append(path + ': ' + str(exc))
+        print('  NOT CHECKED: ' + FAILURES[-1])
         return None
 
 
@@ -30,7 +39,33 @@ def http_json(url):
         req = urllib.request.Request(url, headers={"User-Agent": "repo-evaluator"})
         with urllib.request.urlopen(req, timeout=30) as r:
             return json.load(r)
-    except Exception:
+    except Exception as exc:
+        FAILURES.append(url + ': ' + str(exc))
+        print('  NOT CHECKED: ' + FAILURES[-1])
+        return None
+
+
+def manifest_data(path, kind):
+    """Bounded, non-symlink metadata read; never import code or resolve packages."""
+    try:
+        if not stat.S_ISREG(os.lstat(path).st_mode):
+            raise ValueError('symlink/non-regular manifest not opened')
+        fd = os.open(path, os.O_RDONLY | getattr(os, 'O_NOFOLLOW', 0) | getattr(os, 'O_NONBLOCK', 0))
+        with os.fdopen(fd, 'rb') as stream:
+            if not stat.S_ISREG(os.fstat(stream.fileno()).st_mode):
+                raise ValueError('manifest changed to non-regular file')
+            data = stream.read(8 * 1024 * 1024 + 1)
+        if len(data) > 8 * 1024 * 1024:
+            raise ValueError('manifest size limit exceeded')
+        if kind == 'toml' and tomllib is None:
+            raise ValueError('TOML parser unavailable; registry linkage not checked')
+        result = json.loads(data) if kind == 'json' else tomllib.loads(data.decode('utf-8'))
+        if not isinstance(result, dict):
+            raise ValueError('manifest must be an object')
+        return result
+    except (OSError, ValueError) as exc:
+        FAILURES.append(path + ': ' + str(exc))
+        print('  NOT CHECKED: ' + FAILURES[-1])
         return None
 
 
@@ -100,11 +135,11 @@ def main():
     for x in c[:6]:
         print(f"    {x['login']:<26} {x['contributions']:>6}  ({100 * x['contributions'] / tot:.0f}%)")
 
-    sec("Releases (who uploads binaries? bot/CI = built in public; a human = built on a private machine)")
-    rs = gh(f"repos/{R}/releases?per_page=5") or []
-    if not rs:
+    sec("Releases (uploader is a clue, not proof of build provenance; verify workflow/attestation)")
+    rs = gh(f"repos/{R}/releases?per_page=5")
+    if rs == []:
         print("  no GitHub releases")
-    for r in rs:
+    for r in rs or []:
         print(f"  {r['tag_name']}  {(r.get('published_at') or '')[:10]}  author: {r['author']['login']}{'  (prerelease)' if r['prerelease'] else ''}")
         for a in r["assets"][:8]:
             print(f"      {a['name']}  {a['size'] // 1024} KB  uploader: {(a.get('uploader') or {}).get('login', '?')}  downloads: {a['download_count']}")
@@ -125,11 +160,11 @@ def main():
     for a in (adv or [])[:5]:
         print(f"    {a['ghsa_id']} {a.get('severity')} {(a.get('published_at') or '')[:10]} {a.get('summary', '')[:90]}")
     for p in ("SECURITY.md", ".github/SECURITY.md", "docs/SECURITY.md"):
-        if gh(f"repos/{R}/contents/{p}"):
+        if gh(f"repos/{R}/contents/{p}", optional_missing=True):
             print(f"  security policy: {p}")
             break
     else:
-        print("  security policy: none")
+        print("  security policy: not found in checked locations (see NOT CHECKED warnings for lookup failures)")
 
     sec("Issue/PR search for trust keywords (counts are noisy — READ the titles)")
     for kw in ["malware", "virus", "trojan", "backdoor", "spyware", "telemetry", '"phones home"',
@@ -154,9 +189,9 @@ def main():
 
     sec("Hacker News stories linking to this repo")
     hn = http_json("https://hn.algolia.com/api/v1/search?tags=story&restrictSearchableAttributes=url&query="
-                   + urllib.parse.quote(f"github.com/{R}")) or {}
-    hits = sorted(hn.get("hits", []), key=lambda x: -(x.get("points") or 0))[:6]
-    if not hits:
+                   + urllib.parse.quote(f"github.com/{R}"))
+    hits = sorted((hn or {}).get("hits", []), key=lambda x: -(x.get("points") or 0))[:6]
+    if hn is not None and not hits:
         print("  none")
     for x in hits:
         print(f"  {x.get('points')}pts {x.get('num_comments')}c {x['created_at'][:10]}  {x.get('title', '')[:80]}  https://news.ycombinator.com/item?id={x['objectID']}")
@@ -166,42 +201,49 @@ def main():
         found = False
         pj = os.path.join(DIR, "package.json")
         if os.path.isfile(pj):
-            try:
-                pkg = json.load(open(pj)).get("name")
-            except Exception:
-                pkg = None
+            found = True
+            pkg = (manifest_data(pj, 'json') or {}).get("name")
             if pkg:
                 found = True
-                out = subprocess.run(["npm", "view", pkg, "repository.url", "dist-tags.latest", "maintainers", "--json"],
-                                     capture_output=True, text=True, timeout=60)
-                print(f"  npm {pkg}: {out.stdout.strip()[:400] or 'not on npm'}")
-        if tomllib:
-            for fn, key, url in (("pyproject.toml", "project", "https://pypi.org/pypi/{}/json"),
-                                 ("Cargo.toml", "package", "https://crates.io/api/v1/crates/{}")):
-                p = os.path.join(DIR, fn)
-                if not os.path.isfile(p):
-                    continue
-                try:
-                    n = tomllib.load(open(p, "rb")).get(key, {}).get("name")
-                except Exception:
-                    n = None
-                if not n:
-                    continue
-                found = True
-                d = http_json(url.format(n))
-                if not d:
-                    print(f"  {fn} {n}: not published")
-                elif "info" in d:
-                    print(f"  PyPI {n}: latest {d['info']['version']}  urls: {json.dumps(d['info'].get('project_urls'))[:300]}")
-                elif "crate" in d:
-                    print(f"  crates.io {n}: latest {d['crate']['max_version']}  repo: {d['crate'].get('repository')}")
+                # Do not let an untrusted package name become an npm URL/git spec.
+                if not re.fullmatch(r'(@[a-z0-9_.-]+/)?[a-z0-9_.-]+', str(pkg)):
+                    FAILURES.append('invalid npm package name; registry lookup skipped')
+                else:
+                    data = http_json('https://registry.npmjs.org/' + urllib.parse.quote(pkg, safe=''))
+                    if data is not None:
+                        print(f"  npm {pkg}: {json.dumps({k: data.get(k) for k in ('repository', 'dist-tags', 'maintainers')})[:600]}")
+        for fn, key, url in (("pyproject.toml", "project", "https://pypi.org/pypi/{}/json"),
+                             ("Cargo.toml", "package", "https://crates.io/api/v1/crates/{}")):
+            p = os.path.join(DIR, fn)
+            if not os.path.isfile(p):
+                continue
+            found = True
+            section = (manifest_data(p, 'toml') or {}).get(key) or {}
+            n = section.get("name") if isinstance(section, dict) else None
+            if not n:
+                continue
+            found = True
+            d = http_json(url.format(urllib.parse.quote(str(n), safe='')))
+            if not d:
+                print(f"  {fn} {n}: publication NOT VERIFIED (lookup failed or empty)")
+            elif "info" in d:
+                print(f"  PyPI {n}: latest {d['info']['version']}  urls: {json.dumps(d['info'].get('project_urls'))[:300]}")
+            elif "crate" in d:
+                print(f"  crates.io {n}: latest {d['crate']['max_version']}  repo: {d['crate'].get('repository')}")
         if not found:
             print("  no npm/PyPI/crates manifest — check Homebrew tap / app store / install docs manually")
 
     print("\n== end provenance ==")
+    if FAILURES:
+        print('STATUS: INCOMPLETE — failed lookups are not negative evidence')
+        for failure in FAILURES:
+            print('  ' + failure)
+    else:
+        print('STATUS: retrieved requested metadata (limited pages; not exhaustive reputation research)')
     print("Soft signals (stars, followers) are gameable — weigh below code evidence. Next: web search")
     print(f'(Bright Data CLI/MCP, or built-in web search) for: "{name}" review | "{name}" malware | "{name}" reddit | "{owner}"')
+    return 3 if FAILURES else 0
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

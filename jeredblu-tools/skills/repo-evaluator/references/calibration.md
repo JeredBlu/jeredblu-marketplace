@@ -1,4 +1,6 @@
-# Calibration
+# Historical examples and evaluation limits
+
+These are illustrative prior reviews, not a validation dataset or proof of detection accuracy. Historical verdicts predate rubric 1.0.0; do not copy their labels or scores into a new evaluation.
 
 ## Worked example — nikitabobko/AeroSpace (2026-09-23) → LIKELY SAFE
 
@@ -23,7 +25,7 @@ Verdict shape: **LIKELY SAFE** — needs Accessibility (inherent), unnotarized +
 
 ## Real incidents to pattern-match against
 
-| Incident | Pattern | What would have caught it |
+| Incident | Pattern | Review avenues that might have exposed it (not proven detection) |
 |---|---|---|
 | **xz-utils (2024)** | Long-game maintainer takeover; backdoor injected only in release **tarballs** via build scripts, not in git source | Release artifact ≠ source diff; build-time code (m4/configure) read in full; new maintainer touching release tooling |
 | **event-stream (2018)** | New maintainer given publish rights added a dependency (`flatmap-stream`) with an encrypted payload targeting a crypto wallet | Ownership change + new dep added right after; obfuscated/minified code in dep |
@@ -33,10 +35,9 @@ Verdict shape: **LIKELY SAFE** — needs Accessibility (inherent), unnotarized +
 | **Fake-star / "ghost" repo networks (2024–25)** | Clones of popular tools with bought stars; malware in release zips or README "download" links | Look-alike check; stars vs forks/issues/contributors; release uploader; README links to other owners/domains |
 | **Typosquats (ongoing, npm/PyPI)** | Name one letter off a popular package; install hook steals env vars | Registry cross-check (repo URL mismatch); eyeball dep names |
 
-## Verdict calibration
+## Current verdict policy
 
-- **SAFE (85+)**: reviewed code does what it says, no network or only disclosed/opt-in network, builds in public CI or you build from source, reputable maintainer.
-- **LIKELY SAFE (70–84)**: legit project with trust-relevant caveats (big permissions justified by purpose, unnotarized, off-CI releases, default-on but disclosed telemetry).
-- **USE WITH CAUTION (50–69)**: undisclosed telemetry, persistence without opt-in, sudo installers, unpinned/git deps, thin reputation.
-- **NOT RECOMMENDED (30–49)**: behavior outside stated purpose, self-promo abuse (auto-star, affiliate injection), obfuscation without explanation, suspicious provenance.
-- **DO NOT USE (<30)**: any Critical floor hit.
+Use [scoring.md](scoring.md) and the versioned machine-readable rubric. Historical
+SAFE/LIKELY SAFE labels above are not current output categories. Evidence-based
+severity and applicability judgments remain necessary; deterministic arithmetic
+alone does not calibrate a security evaluator.

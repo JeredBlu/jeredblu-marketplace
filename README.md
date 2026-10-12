@@ -9,7 +9,7 @@ This marketplace provides skills that work across multiple AI coding tools:
 - **prd-creator**: Create comprehensive PRDs through conversational discovery
 - **agent-skill-evaluator**: Security and safety evaluation for agent skills
 - **mcp-evaluator**: Security and privacy evaluation for MCP servers
-- **repo-evaluator**: Is this GitHub project safe to install? Checks what it does to your computer, who it talks to, and whether it's shady — without ever installing or running it
+- **repo-evaluator**: Evidence-led pre-install review with a versioned 22-check rubric, per-check points, severity caps and explicit unknowns. Checks behavior, install paths, data flows and provenance without executing the target. Scores are heuristic, not safety probabilities; no extra AI API key is required.
 - **frugal-fable**: Keep a premium model (Fable/Opus) on the judgment and delegate token-heavy work to cheaper models (Haiku/Sonnet) — for research, building, testing, and debugging. Have Codex CLI too? It can offload slices to GPT-5.6 (Sol/Terra/Luna) as a **second quota pool** — consent-gated, and zero Claude usage for the offloaded work
 
 Most skills utilize MCP servers for enhanced functionality and follow the open Agent Skills standard. **frugal-fable** additionally needs Claude Code's workflow + sub-agent orchestration for its full feature set (see the platform note under [Usage](#frugal-fable-1)).
@@ -91,7 +91,7 @@ The skills work best with MCP servers. Both are optional but highly recommended 
 - [Create BRD Account with my Link (you might get some extra free credits)](https://tinyurl.com/jeredwebmcp)
 
 **Bright Data CLI (alternative to the MCP)**
-- `npm i -g @brightdata/cli`, then `bdata login` — used by repo-evaluator for web search (`bdata search`)
+- `npm i -g @brightdata/cli`, then `brightdata login` — used by repo-evaluator for web search (`brightdata search`; use `bdata` if that is your installed executable)
 
 **GitHub CLI (`gh`) — required for repo-evaluator**
 - [Install](https://cli.github.com/), then `gh auth login`

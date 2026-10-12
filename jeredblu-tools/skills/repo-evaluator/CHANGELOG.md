@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.1.0 — 2026-10-12
+- Versioned 22-check, 100-point evidence rubric with deterministic calculation, per-check/per-dimension output, explicit unknowns and severity caps. No unqualified SAFE label or extra API key.
+- Full JSON lead inventory; explicit skipped/failed checks; agent-instruction review and prompt-injection leads.
+- Dependency coverage now distinguishes unsupported formats, parse failures, offline checks and failed OSV responses.
+- ZIP/TAR extraction validates all entries first and rejects traversal, links, path aliases and size/count limits.
+- Metadata lookup failures are explicit; release uploader is no longer treated as proof of build origin. Public fetch ignores global Git filters/templates.
+- Offline inert-fixture regression suite; see references/scoring.md for scope and limitations.
+
+
 ## 1.0.0 — 2026-09-23
 - Initial release. Sibling of agent-skill-evaluator / mcp-evaluator for general open-source software.
 - `fetch.sh`: non-executing clone (temp dir, no hooks/submodules/LFS, optional tag).

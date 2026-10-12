@@ -1,0 +1,312 @@
+{
+  "rubric_version": "1.0.0",
+  "description": "Heuristic risk-review rubric. Points are not a probability of safety. Human/agent evidence judgments are inputs; arithmetic and gates are deterministic. Weights are explicit policy choices, not empirically calibrated.",
+  "dimensions": {
+    "install": "Installation",
+    "behavior": "Code behavior",
+    "data": "Data and privacy",
+    "supply": "Supply chain",
+    "trust": "Source trust",
+    "transparency": "Transparency and agent safety"
+  },
+  "status_credit": {
+    "pass": 1,
+    "concern": 0.5,
+    "fail": 0
+  },
+  "severity_caps": {
+    "none": 100,
+    "low": 100,
+    "medium": 69,
+    "high": 49,
+    "critical": 29
+  },
+  "checks": [
+    {
+      "id": "install.entrypoints",
+      "dimension": "install",
+      "title": "Install and build entrypoints",
+      "weight": 4,
+      "criteria": {
+        "pass": "All applicable installers/build hooks reviewed; behavior is scoped and disclosed",
+        "concern": "Reviewed installer has disclosed network/bootstrap behavior or broad effects requiring precautions",
+        "fail": "Installer makes undisclosed or unjustified changes"
+      },
+      "allow_not_applicable": false,
+      "fail_min_severity": "medium"
+    },
+    {
+      "id": "install.privilege",
+      "dimension": "install",
+      "title": "Privilege and security controls",
+      "weight": 3,
+      "criteria": {
+        "pass": "No elevated privilege, or narrowly scoped documented need without disabling protections",
+        "concern": "Disclosed admin access or quarantine bypass requires explicit precautions",
+        "fail": "Unjustified privilege or silent security-control bypass"
+      },
+      "allow_not_applicable": false,
+      "fail_min_severity": "medium"
+    },
+    {
+      "id": "install.persistence",
+      "dimension": "install",
+      "title": "Persistence",
+      "weight": 3,
+      "criteria": {
+        "pass": "No persistence, or disclosed user-controlled persistence",
+        "concern": "Disclosed persistence is on by default or removal is unclear",
+        "fail": "Undisclosed background or login behavior"
+      },
+      "allow_not_applicable": false,
+      "fail_min_severity": "medium"
+    },
+    {
+      "id": "behavior.entrypoints",
+      "dimension": "behavior",
+      "title": "Runtime entrypoints",
+      "weight": 6,
+      "criteria": {
+        "pass": "Entrypoints and sensitive call paths reviewed and consistent with purpose",
+        "concern": "Material capability is disclosed but has meaningful residual exposure",
+        "fail": "Behavior contradicts the stated purpose"
+      },
+      "allow_not_applicable": false,
+      "fail_min_severity": "medium"
+    },
+    {
+      "id": "behavior.execution",
+      "dimension": "behavior",
+      "title": "Process and remote execution",
+      "weight": 6,
+      "criteria": {
+        "pass": "Execution is scoped to intended user actions; no unexplained downloaded code",
+        "concern": "Disclosed download-and-run/update behavior lacks strong provenance",
+        "fail": "Hidden or unjustified remote control or downloaded code execution"
+      },
+      "allow_not_applicable": false,
+      "fail_min_severity": "critical"
+    },
+    {
+      "id": "behavior.credentials",
+      "dimension": "behavior",
+      "title": "Credential access",
+      "weight": 6,
+      "criteria": {
+        "pass": "No credential access, or necessary narrowly scoped access is documented",
+        "concern": "Broad but justified credential access needs precautions",
+        "fail": "Credentials are accessed or transmitted without a legitimate authorized purpose"
+      },
+      "allow_not_applicable": false,
+      "fail_min_severity": "critical"
+    },
+    {
+      "id": "behavior.destruction",
+      "dimension": "behavior",
+      "title": "Filesystem and destructive behavior",
+      "weight": 6,
+      "criteria": {
+        "pass": "Writes/deletes are confined to intended user-selected or owned paths",
+        "concern": "Broad destructive capability is documented and requires care",
+        "fail": "Uncontrolled destruction of user/system data or attacker-controlled writes outside the intended scope"
+      },
+      "allow_not_applicable": false,
+      "fail_min_severity": "critical"
+    },
+    {
+      "id": "behavior.concealment",
+      "dimension": "behavior",
+      "title": "Obfuscation and opaque payloads",
+      "weight": 6,
+      "criteria": {
+        "pass": "No unexplained obfuscation or opaque runtime payloads",
+        "concern": "Disclosed opaque components have limited provenance",
+        "fail": "Unexplained obfuscation or concealed executable logic"
+      },
+      "allow_not_applicable": false,
+      "fail_min_severity": "high"
+    },
+    {
+      "id": "data.network",
+      "dimension": "data",
+      "title": "Network map",
+      "weight": 8,
+      "criteria": {
+        "pass": "Relevant network call sites reviewed; destinations/data/purpose are explained",
+        "concern": "Disclosed third-party transfer has significant privacy implications",
+        "fail": "Undisclosed or unjustified transfer or unexplained destination"
+      },
+      "allow_not_applicable": false,
+      "fail_min_severity": "high"
+    },
+    {
+      "id": "data.telemetry",
+      "dimension": "data",
+      "title": "Telemetry defaults and controls",
+      "weight": 6,
+      "criteria": {
+        "pass": "No telemetry or clearly disclosed opt-in telemetry with honored controls",
+        "concern": "Disclosed default-on telemetry or limited controls",
+        "fail": "Undisclosed telemetry or controls that do not work"
+      },
+      "allow_not_applicable": false,
+      "fail_min_severity": "medium"
+    },
+    {
+      "id": "data.capture",
+      "dimension": "data",
+      "title": "Collection and surveillance",
+      "weight": 6,
+      "criteria": {
+        "pass": "Data access/capture is necessary, proportionate, disclosed and controlled",
+        "concern": "Broad but justified access requires precautions",
+        "fail": "Unrelated or covert capture/collection"
+      },
+      "allow_not_applicable": false,
+      "fail_min_severity": "high"
+    },
+    {
+      "id": "supply.dependencies",
+      "dimension": "supply",
+      "title": "Dependency source and pinning",
+      "weight": 5,
+      "criteria": {
+        "pass": "Applicable dependencies resolved and source/pinning reviewed",
+        "concern": "Floating, git/URL or alternate-registry deps require precautions",
+        "fail": "Suspicious substitutions or unjustified dependency sources"
+      },
+      "allow_not_applicable": false,
+      "fail_min_severity": "high"
+    },
+    {
+      "id": "supply.advisories",
+      "dimension": "supply",
+      "title": "Known dependency vulnerabilities",
+      "weight": 5,
+      "criteria": {
+        "pass": "Supported resolved dependencies checked successfully; no material applicable advisories",
+        "concern": "Known advisories have credible mitigations or limited applicability",
+        "fail": "Applicable unmitigated vulnerabilities"
+      },
+      "allow_not_applicable": false,
+      "fail_min_severity": "medium"
+    },
+    {
+      "id": "supply.artifact",
+      "dimension": "supply",
+      "title": "Install artifact provenance",
+      "weight": 6,
+      "criteria": {
+        "pass": "Exact intended artifact inspected and provenance tied to reviewed source",
+        "concern": "Exact artifact inspected but source/build linkage remains weak",
+        "fail": "Artifact contradicts reviewed source or origin is untrustworthy"
+      },
+      "allow_not_applicable": true,
+      "fail_min_severity": "high"
+    },
+    {
+      "id": "supply.updates",
+      "dimension": "supply",
+      "title": "Update path",
+      "weight": 4,
+      "criteria": {
+        "pass": "No updates or disclosed verified update path with user control",
+        "concern": "Disclosed automatic update path skips future review or lacks sufficient verification",
+        "fail": "Undisclosed or untrusted update execution"
+      },
+      "allow_not_applicable": false,
+      "fail_min_severity": "high"
+    },
+    {
+      "id": "trust.identity",
+      "dimension": "trust",
+      "title": "Project identity",
+      "weight": 4,
+      "criteria": {
+        "pass": "Original repo/install origin corroborated; no unexplained ownership mismatch",
+        "concern": "Thin or changed provenance needs precautions",
+        "fail": "Impersonation or suspicious ownership/origin evidence"
+      },
+      "allow_not_applicable": false,
+      "fail_min_severity": "high"
+    },
+    {
+      "id": "trust.maintenance",
+      "dimension": "trust",
+      "title": "Maintenance and security process",
+      "weight": 3,
+      "criteria": {
+        "pass": "Relevant history and security response reviewed without material concerns",
+        "concern": "Limited maintenance/history/security process",
+        "fail": "Evidence of unresolved serious maintenance or security-response problems"
+      },
+      "allow_not_applicable": false,
+      "fail_min_severity": "medium"
+    },
+    {
+      "id": "trust.incidents",
+      "dimension": "trust",
+      "title": "Independent incident research",
+      "weight": 3,
+      "criteria": {
+        "pass": "Reputation/incident research completed; material reports resolved with evidence",
+        "concern": "Credible unresolved concerns require precautions",
+        "fail": "Corroborated serious compromise or abuse"
+      },
+      "allow_not_applicable": false,
+      "fail_min_severity": "high"
+    },
+    {
+      "id": "transparency.disclosure",
+      "dimension": "transparency",
+      "title": "Claims and permissions",
+      "weight": 3,
+      "criteria": {
+        "pass": "Claims and requested permissions match reviewed behavior",
+        "concern": "Documentation gaps have clear bounded consequences",
+        "fail": "Materially misleading claims or permissions"
+      },
+      "allow_not_applicable": false,
+      "fail_min_severity": "medium"
+    },
+    {
+      "id": "transparency.promotion",
+      "dimension": "transparency",
+      "title": "Self-promotion and account actions",
+      "weight": 2,
+      "criteria": {
+        "pass": "No forced promotion/account actions, or genuinely optional and disclosed",
+        "concern": "Disclosed nags or branding require user acceptance",
+        "fail": "Unapproved auto-star/follow, affiliate substitution or output injection"
+      },
+      "allow_not_applicable": false,
+      "fail_min_severity": "high"
+    },
+    {
+      "id": "transparency.removal",
+      "dimension": "transparency",
+      "title": "Removal and reversibility",
+      "weight": 2,
+      "criteria": {
+        "pass": "Uninstall/reversal and persistent changes are understood",
+        "concern": "Some documented residue or manual cleanup required",
+        "fail": "Hidden persistent changes or obstructed removal"
+      },
+      "allow_not_applicable": false,
+      "fail_min_severity": "medium"
+    },
+    {
+      "id": "transparency.agent_instructions",
+      "dimension": "transparency",
+      "title": "Agent-facing instructions and configuration",
+      "weight": 3,
+      "criteria": {
+        "pass": "Agent files/config reviewed (or verified absent); no trust-boundary override",
+        "concern": "Broad disclosed agent tools/hooks require explicit precautions",
+        "fail": "Instructions attempt to hijack review, exfiltrate, execute covertly or hide findings"
+      },
+      "allow_not_applicable": false,
+      "fail_min_severity": "high"
+    }
+  ]
+}

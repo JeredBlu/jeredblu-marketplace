@@ -5,7 +5,7 @@ For each `scan.sh` category: why it matters (plain English), common **legitimate
 | # | Category | Why it matters | Usually fine when… | Bad when… |
 |---|---|---|---|---|
 | 1 | Remote execution | Downloads code at runtime that you never reviewed and runs it | Docs showing *the user* how to install (read what the script does) | The program/installer itself fetches and runs a script, esp. from a non-project domain or raw IP |
-| 2 | Install hooks / quarantine bypass | Code runs automatically when you install; removing quarantine skips Apple's malware check | `postinstall` compiles a native addon (`node-gyp`); cask strips quarantine because the app isn't notarized **and says so** | Hook downloads things, reads files, or contacts network; quarantine stripped silently |
+| 2 | Install hooks / quarantine bypass | Code runs automatically when you install; removing quarantine can bypass first-launch Gatekeeper assessment | `postinstall` compiles a native addon (`node-gyp`); cask strips quarantine because the app isn't notarized **and says so** | Hook downloads things, reads files, or contacts network; quarantine stripped silently |
 | 3 | Persistence | Keeps running after reboot / at login | "Start at login" toggle the user opts into; `SMAppService` login item | Silent LaunchAgent/Daemon, cron job, shell-profile append the user wasn't told about |
 | 4 | Privilege | Admin/root can change anything on the machine | Dev/CI scripts (`.github/`), documented one-time helper installs | App asks for admin at runtime with no clear reason; disables SIP/Gatekeeper; resets TCC for other apps |
 | 5 | Destructive | Could delete data | Cleanup of its own build/cache dirs | Paths outside its own dirs, `$HOME`, `/`, disks |
@@ -24,7 +24,8 @@ For each `scan.sh` category: why it matters (plain English), common **legitimate
 | 17 | Dev-env triggers | Runs code when you open/clone the folder | `pull_request_target` for labeling (affects maintainers, not you) | `.vscode/tasks.json` `runOn: folderOpen`, devcontainer hooks that fetch/run things |
 | 18 | Trojan-source Unicode | Invisible characters make code read differently than it runs | Localized UI strings, emoji data | Bidi overrides inside code logic or comments near logic |
 | 19 | Committed binaries | Can't be reviewed; could be anything | Test fixtures, icons, well-known vendored libs with provenance | Executables/dylibs with no source or build explanation, esp. ones the installer uses |
-| 20 | Minified code in source | Same as 19 for scripts | Vendored `*.min.js` with the unminified source or a known upstream | Only-minified logic in install/runtime paths |
+| 20 | Minified code in source | Opaque logic requires provenance | Vendored `*.min.js` with the unminified source or a known upstream | Only-minified logic in install/runtime paths |
+| 24 | Agent instructions / prompt injection | Tries to redirect the reviewer or agent tools | Quoted training/test examples, scoped user-authorized project guidance | Instructions to hide findings, override trusted policy, execute covertly or exfiltrate |
 
 ## Repo archetypes (expected noise — don't re-discover it every run)
 
@@ -61,8 +62,8 @@ For each `scan.sh` category: why it matters (plain English), common **legitimate
 | Automation (Apple Events) | Control other apps (e.g. tell Finder/Mail to do things) |
 | Camera / Microphone | Obvious — check for an in-app indicator and purpose |
 | Admin password prompt | Can change anything on the system |
-| Quarantine removed (`xattr -d com.apple.quarantine`) | Skips Apple's first-launch malware check |
-| Unnotarized | Apple never scanned it; trust rests entirely on the developer |
+| Quarantine removed (`xattr -d com.apple.quarantine`) | Can bypass first-launch Gatekeeper assessment; not every macOS protection |
+| Unnotarized | No verified notarization for this artifact; not proof of malware or absence of all platform scanning |
 
 ## Provenance red flags
 

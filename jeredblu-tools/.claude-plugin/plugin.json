@@ -1,7 +1,7 @@
 {
   "name": "jeredblu-tools",
   "description": "Claude Code skills and tools from JeredBlu - PRD Creator, Skill Evaluator, MCP Evaluator, Repo Evaluator (pre-install safety check for any GitHub project), Frugal Fable (with cross-CLI Codex delegation), and more",
-  "version": "1.5.0",
+  "version": "1.6.0",
   "author": {
     "name": "Jered Blumenfeld"
   },
