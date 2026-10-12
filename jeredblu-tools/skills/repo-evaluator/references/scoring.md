@@ -1,4 +1,4 @@
-# Evidence-led scoring (rubric 1.0.0)
+# Evidence-led scoring (rubric 1.1.0)
 
 The machine-readable policy is [rubric-v1.json](rubric-v1.json); `scripts/score.py`
 is the sole calculator. Do not invent a total, override weights, or translate
@@ -63,7 +63,7 @@ ledger as trusted instructions.
 | pass | 100% of check weight | Reason + evidence; severity none |
 | concern | 50% | Reason + evidence; severity low or medium |
 | fail | 0% | Reason + evidence; severity at or above the check's `fail_min_severity` |
-| unknown | Unknown, not zero risk | Reason; severity none; no positive verdict |
+| unknown | Excluded from assessed-score denominator; reduces coverage | Reason; severity none; score remains provisional |
 | not_applicable | Removed from denominator | Only `supply.artifact` for a genuinely source-only install; reason + evidence |
 
 Absence of an updater or agent config is a **pass only after checking for it**,
@@ -75,24 +75,61 @@ resolved. A confirmed failure remains a failure even if other areas are unknown.
 
 ## Calculation and gates
 
-1. Sum earned points from each applicable check. Divide by applicable weight,
-   multiply by 100. N/A exclusions are reported (normally the denominator is 100).
-2. Unknown checks contribute a **range**, from zero to their full weight. With any
-   unknown, withhold the single score. This interval is a rubric bound, **not** a
-   statistical confidence interval.
+1. Sum earned points and the weight of **assessed** checks (pass/concern/fail).
+   Reviewed-evidence score = earned / assessed weight × 100. Unknown checks do
+   not earn points and are not in this denominator. N/A exclusions remain
+   separately reported; an uninspected intended binary is unknown, not N/A.
+2. Always show weighted coverage = assessed / applicable weight × 100 beside
+   the score. With any unknowns, label the score **provisional, assessed checks
+   only** and name the gaps. No assessed checks means no meaningful number:
+   return score null and INCOMPLETE, never an invented zero or 100.
 3. Apply the worst confirmed severity cap: medium ≤69, high ≤49, critical ≤29.
-   Always show the uncapped calculation and the checks causing the cap. This is
-   a policy safeguard: good documentation cannot cancel credential theft.
-4. Critical → DO NOT USE; high → NOT RECOMMENDED even with missing checks.
-   Otherwise any unknown → INCOMPLETE. For complete ledgers: <30 DO NOT USE,
-   <50 NOT RECOMMENDED, <85 USE WITH CAUTION, ≥85 NO MAJOR RISKS IDENTIFIED.
-   Decisions use unrounded arithmetic; displayed points round to one decimal.
+   Show the uncapped reviewed-evidence score and checks causing the cap. Good
+   documentation cannot cancel credential theft; gaps cannot erase findings.
+4. Critical → DO NOT USE; high → NOT RECOMMENDED. Otherwise use the capped
+   reviewed-evidence score: <30 DO NOT USE, <50 NOT RECOMMENDED, <85 USE WITH
+   CAUTION. At ≥85: unknowns → REVIEWED WITH LIMITATIONS; all checks resolved →
+   NO MAJOR RISKS IDENTIFIED. Decide before rounding, display one decimal.
+5. Retain the full-rubric **points-only range** in the detailed report, assigning
+   unknown checks zero-to-full credit while holding known severity caps fixed.
+   This is not a confidence interval or bound on future verdicts: discovering a
+   serious finding can introduce a stronger cap and reduce the result further.
 
-Examples: all checks pass → 100; a 4-point check is a low concern → 98;
-that same check unknown → score withheld, range 96–100, coverage 96%; that check
-is a critical failure → raw 96, capped 29, DO NOT USE. None of these are chances
-that software is safe. A 100 means only that all applicable rubric criteria were
-judged satisfied by the supplied evidence.
+Examples: all checks pass → 100; a 4-point check is a low concern → 98.
+That same check unknown → reviewed-evidence score 100, coverage 96%, provisional,
+REVIEWED WITH LIMITATIONS; full-rubric points-only range 96–100. A critical failure
+still caps the result at 29. FilmCraft's saved evidence gives 76.5 earned / 89 assessed
+×100 = **86.0/100**, coverage 89%, with 11 points unassessed. The check weights and
+classifications are unchanged; this is a different, explicitly versioned way of
+presenting incomplete evidence, not newly discovered safety evidence.
+
+A high score with little coverage is **not** a strong endorsement. Never hide the
+coverage, mark unresolved concerns pass, or choose easy checks to inflate the
+score. Do not compare scores across different scopes/coverage as if equivalent.
+The number is not a probability of safety, even at 100 and complete coverage.
+
+## Optional package inspection
+
+A source/static review is a useful deliverable by itself. Package inspection is
+an optional additional step, not a requirement for giving a score. If the user
+already said not to download/open the package, respect that decision without
+asking again or calling the review blocked. State **package not inspected — by
+user choice** and leave the artifact check unknown. If not previously declined,
+you may offer the extra inspection; obtain explicit approval before download or
+mounting. Never install/launch the target as part of static inspection.
+
+Other incomplete checks (e.g. unresolved dependency applicability) remain unknown
+for their own reasons; optional artifact scope must not hide unrelated gaps.
+
+## Versioned output
+
+Rubric 1.1.0 changes `score` to the assessed-check calculation and adds
+`assessed_points`, `unknown_points`, `raw_reviewed_score`, `score_basis`,
+`score_is_provisional` and `coverage_status`. Older 1.0.0 ledgers are rejected so
+results are not silently reinterpreted. To recalculate saved evidence, preserve
+the original ledger/report, create a copy with version 1.1.0 after checking the
+criteria remain identical, and save new outputs explicitly as a recalculation,
+not a fresh repository audit.
 
 `coverage_percent` is assessed **rubric weight**, not percent of code read, test
 coverage, or confidence. Separately state files read/scanned, excluded files,

@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.2.0 — 2026-10-12
+- Rubric 1.1.0 gives a numeric reviewed-evidence score normalized over assessed checks, with separate coverage, unknowns and scope. Severity caps still apply; no-evidence reviews do not invent a score.
+- Partial reviews use REVIEWED WITH LIMITATIONS or an adverse verdict, not an automatic overall INCOMPLETE label.
+- Package inspection is explicitly optional; respect a prior decline without asking again or blocking the source-review result.
+- Preserve original rubric-1.0.0 ledgers/results when recalculating under the new policy.
+
 ## 1.1.0 — 2026-10-12
 - Versioned 22-check, 100-point evidence rubric with deterministic calculation, per-check/per-dimension output, explicit unknowns and severity caps. No unqualified SAFE label or extra API key.
 - Full JSON lead inventory; explicit skipped/failed checks; agent-instruction review and prompt-injection leads.

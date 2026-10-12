@@ -1,5 +1,5 @@
 {
-  "rubric_version": "1.0.0",
+  "rubric_version": "1.1.0",
   "description": "Heuristic risk-review rubric. Points are not a probability of safety. Human/agent evidence judgments are inputs; arithmetic and gates are deterministic. Weights are explicit policy choices, not empirically calibrated.",
   "dimensions": {
     "install": "Installation",

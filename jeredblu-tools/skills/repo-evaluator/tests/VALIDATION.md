@@ -1,6 +1,6 @@
-# Repo Evaluator 1.1.0 validation
+# Repo Evaluator 1.2.0 validation
 
-Validated locally on macOS on 2026-10-12. Rubric version: 1.0.0.
+Validated locally on macOS on 2026-10-12. Rubric version: 1.1.0.
 
 ## Reproduce
 
@@ -12,22 +12,28 @@ python3 -B -m unittest discover -s jeredblu-tools/skills/repo-evaluator/tests -v
 
 ## Results
 
-- Python 3.14.6: **45 tests passed** (including parameterized/subtest cases).
-- macOS system Python 3.9.6: **44 passed, 1 skipped**. The TOML-success test is
+- Python 3.14.6: **50 tests passed** (including parameterized/subtest cases).
+- macOS system Python 3.9.6: **49 passed, 1 skipped**. The TOML-success test is
   intentionally skipped because 3.9 lacks `tomllib`; the missing-parser warning
   regression still runs and passes.
 - Shell syntax checks: `bash -n` on all three shell helpers passed.
 - Skill frontmatter/structure validator passed using an existing PyYAML-enabled
   environment. No packages were installed. Version is under `metadata.version`.
-- Download ZIP: all 18 packaged files match the source byte-for-byte; all 45 tests
+- Download ZIP: all 18 packaged files match the source byte-for-byte; all 50 tests
   also passed from a fresh extraction using the archive validation helper.
 - Public HTTPS fetch smoke test succeeded against JeredBlu/jeredblu-marketplace
   revision `8946664033ea20cc9b0ccd8b10c11b4a113c690b` without building/installing it.
 - JSON scan smoke: 32 text files read, five opaque/binary gaps, exit 3/incomplete.
   Dependency smoke with `--offline`: explicitly incomplete, not a clean OSV result.
-- CLI evidence-ledger example with missing reputation evidence: INCOMPLETE,
-  score withheld, range 89.4–100 and 89.4% weighted rubric coverage. This used a
-  synthetic source-only fixture, not a safety assessment of the public repository.
+- Historical rubric-1.0.0 CLI smoke withheld its score for unknown reputation
+  evidence; that behavior is superseded by the assessed-check policy below.
+- Saved FilmCraft evidence recalculated under rubric 1.1.0 without another source
+  audit or package download: 76.5 earned / 89 assessed ×100 = 86.0/100,
+  REVIEWED WITH LIMITATIONS, 89% weighted coverage; original evidence and results
+  preserved. 22 criteria and severity caps unchanged.
+- Optional package decline leaves artifact unknown rather than failed/N/A and
+  does not prevent a numeric assessed-check score. Sparse coverage stays
+  provisional; no-evidence reviews return null rather than inventing a number.
 
 ## Properties exercised
 
@@ -60,3 +66,12 @@ repository code or fixture payload was executed. Live OSV failure handling uses
 mocked responses; notarization, DMG/PKG parsers and actual release/source equivalence
 were not validated against a corpus of production artifacts. No Jev call or other
 hosted semantic-review integration was introduced. Changes are local until published.
+
+## Known field-test follow-ups (not fixed by this scoring change)
+
+Cargo workspace-only packages can be misclassified as crates.io dependencies in
+`deps.py`, and `repo_meta.py` contains an unverified blanket claim about stargazer
+timestamp availability. The FilmCraft review manually corrected package counts
+and excluded that metadata assertion. Neither passing tests nor this scoring
+update proves those issues resolved. Target/feature-specific Cargo advisory
+applicability also still requires manual review.

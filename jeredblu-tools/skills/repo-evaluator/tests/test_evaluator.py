@@ -62,10 +62,12 @@ class ScoringTests(unittest.TestCase):
         data = ledger()
         data['checks'].pop(0)
         r = score.evaluate(data, RUBRIC)
-        self.assertIsNone(r['score'])
+        self.assertEqual(r['score'], 100)
+        self.assertEqual(r['assessed_points'], 96)
+        self.assertTrue(r['score_is_provisional'])
         self.assertEqual(r['score_range'], [96, 100])
         self.assertEqual(r['coverage_percent'], 96)
-        self.assertEqual(r['verdict'], 'INCOMPLETE')
+        self.assertEqual(r['verdict'], 'REVIEWED WITH LIMITATIONS')
 
     def test_all_unknown(self):
         data = ledger(); data['checks'] = []
@@ -73,6 +75,8 @@ class ScoringTests(unittest.TestCase):
         self.assertEqual(r['score_range'], [0, 100])
         self.assertEqual(r['coverage_percent'], 0)
         self.assertIsNone(r['score'])
+        self.assertEqual(r['coverage_status'], 'not_assessed')
+        self.assertEqual(r['verdict'], 'INCOMPLETE')
 
     def test_critical_overrides_good_score_and_missing_checks(self):
         for missing in (False, True):
@@ -83,6 +87,7 @@ class ScoringTests(unittest.TestCase):
             r = score.evaluate(data, RUBRIC)
             self.assertEqual(r['verdict'], 'DO NOT USE')
             self.assertLessEqual(r['score_range'][1], 29)
+            self.assertLessEqual(r['score'], 29)
             self.assertEqual(r['severity_cap']['trigger_checks'], ['install.entrypoints'])
 
     def test_high_and_medium_caps(self):
@@ -116,9 +121,63 @@ class ScoringTests(unittest.TestCase):
                 self.assertLessEqual(r['raw_score_range'][1], interval[1])
             self.assertEqual(values, sorted(values, reverse=True))
 
-    def test_unknown_with_medium_stays_incomplete(self):
+    def test_unknown_with_medium_keeps_adverse_verdict_and_cap(self):
         data = ledger(); data['checks'][0].update(status='concern', severity='medium'); data['checks'].pop()
-        self.assertEqual(score.evaluate(data, RUBRIC)['verdict'], 'INCOMPLETE')
+        r = score.evaluate(data, RUBRIC)
+        self.assertEqual(r['verdict'], 'USE WITH CAUTION')
+        self.assertEqual(r['score'], 69)
+        self.assertTrue(r['score_is_provisional'])
+
+    def test_filmcraft_assessed_score_and_coverage(self):
+        data = ledger(); data['target']['install_method'] = 'release'
+        concerns = {'behavior.entrypoints', 'behavior.destruction', 'trust.maintenance',
+                    'trust.incidents', 'transparency.promotion', 'transparency.removal',
+                    'transparency.agent_instructions'}
+        for c in data['checks']:
+            if c['id'] in concerns: c.update(status='concern', severity='low')
+            if c['id'] in {'supply.artifact', 'supply.advisories'}: c.update(status='unknown', evidence=[])
+        r = score.evaluate(data, RUBRIC)
+        self.assertEqual(r['score'], 86)
+        self.assertEqual(r['earned_points'], 76.5)
+        self.assertEqual(r['assessed_points'], 89)
+        self.assertEqual(r['coverage_percent'], 89)
+        self.assertEqual(r['score_range'], [76.5, 87.5])
+        self.assertEqual(r['verdict'], 'REVIEWED WITH LIMITATIONS')
+        self.assertEqual(sum(d['assessed_points'] for d in r['dimensions'].values()), 89)
+
+    def test_declined_artifact_is_unknown_not_failure_or_na(self):
+        data = ledger(); data['target']['install_method'] = 'release'
+        artifact = next(c for c in data['checks'] if c['id'] == 'supply.artifact')
+        artifact.update(status='unknown', evidence=[], reason='User declined optional package inspection')
+        r = score.evaluate(data, RUBRIC)
+        self.assertEqual(r['score'], 100)
+        self.assertEqual(r['coverage_percent'], 94)
+        self.assertEqual(r['applicable_points'], 100)
+        self.assertEqual(r['unknown_points'], 6)
+        self.assertEqual(r['verdict'], 'REVIEWED WITH LIMITATIONS')
+        self.assertEqual(r['status_counts']['unknown'], 1)
+
+    def test_sparse_review_never_gets_unqualified_positive_verdict(self):
+        data = ledger(); data['checks'] = data['checks'][:1]
+        r = score.evaluate(data, RUBRIC)
+        self.assertEqual(r['score'], 100)
+        self.assertEqual(r['coverage_percent'], 4)
+        self.assertEqual(r['coverage_status'], 'partial')
+        self.assertEqual(r['verdict'], 'REVIEWED WITH LIMITATIONS')
+        rendered = score.markdown(r)
+        self.assertIn('provisional, assessed checks only', rendered)
+        self.assertIn('4.0%', rendered)
+
+    def test_prior_scoring_version_not_silently_reinterpreted(self):
+        data = ledger(); data['rubric_version'] = '1.0.0'
+        with self.assertRaises(ValueError): score.evaluate(data, RUBRIC)
+
+    def test_partial_failed_only_evidence_cannot_be_normalized_to_pass(self):
+        data = ledger(); data['checks'] = data['checks'][:1]
+        data['checks'][0].update(status='fail', severity='medium')
+        r = score.evaluate(data, RUBRIC)
+        self.assertEqual(r['score'], 0)
+        self.assertEqual(r['verdict'], 'DO NOT USE')
 
     def test_na_removes_only_source_artifact_weight(self):
         data = ledger()

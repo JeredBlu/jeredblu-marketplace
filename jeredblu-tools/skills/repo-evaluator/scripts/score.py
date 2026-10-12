@@ -110,6 +110,7 @@ def evaluate(ledger, rubric):
     applicable = sum(r["possible_points"] for r in rows)
     earned = sum(Decimal(str(r["earned_points"])) for r in rows)
     unknown = sum(r["possible_points"] for r in rows if r["status"] == "unknown")
+    assessed = applicable - unknown
     worst = max((r["severity"] for r in rows), key=SEVERITIES.index)
     cap = rubric["severity_caps"][worst]
     def percent(n):
@@ -118,19 +119,23 @@ def evaluate(ledger, rubric):
         return float(n.quantize(Decimal("0.1"), rounding=ROUND_HALF_UP))
     low, high = percent(earned), percent(earned + unknown)
     capped_low, capped_high = min(low, Decimal(cap)), min(high, Decimal(cap))
+    reviewed = earned * 100 / Decimal(assessed) if assessed else None
+    capped_reviewed = min(reviewed, Decimal(cap)) if reviewed is not None else None
     # Decide using unrounded values. A display round-up must never upgrade a verdict.
     if worst == "critical":
         verdict = "DO NOT USE"
     elif worst == "high":
         verdict = "NOT RECOMMENDED"
-    elif unknown:
+    elif not assessed:
         verdict = "INCOMPLETE"
-    elif capped_low < 30:
+    elif capped_reviewed < 30:
         verdict = "DO NOT USE"
-    elif capped_low < 50:
+    elif capped_reviewed < 50:
         verdict = "NOT RECOMMENDED"
-    elif capped_low < 85:
+    elif capped_reviewed < 85:
         verdict = "USE WITH CAUTION"
+    elif unknown:
+        verdict = "REVIEWED WITH LIMITATIONS"
     else:
         verdict = "NO MAJOR RISKS IDENTIFIED"
     dimensions = {}
@@ -139,19 +144,27 @@ def evaluate(ledger, rubric):
         dimensions[dim] = {"label": label,
                            "earned_points": sum(r["earned_points"] for r in subset),
                            "possible_points": sum(r["possible_points"] for r in subset),
+                           "assessed_points": sum(r["possible_points"] for r in subset if r["status"] != "unknown"),
                            "unknown_points": sum(r["possible_points"] for r in subset if r["status"] == "unknown")}
     return {"rubric_version": rubric["rubric_version"], "target": target, "verdict": verdict,
-            "score": None if unknown else rounded(capped_low),
+            "score": rounded(capped_reviewed) if assessed else None,
+            "score_basis": "Earned points / assessed check weight, normalized to 100, then severity-capped",
+            "score_is_provisional": bool(unknown),
+            "raw_reviewed_score": rounded(reviewed) if assessed else None,
+            "coverage_status": "complete" if not unknown else "partial" if assessed else "not_assessed",
             "score_range": [rounded(capped_low), rounded(capped_high)],
             "raw_score_range": [rounded(low), rounded(high)],
+            "range_definition": "Points-only bounds holding known severity caps fixed; newly discovered serious findings can lower these bounds",
             "earned_points": float(earned), "applicable_points": applicable,
-            "coverage_percent": rounded(percent(applicable - unknown)),
+            "assessed_points": assessed, "unknown_points": unknown,
+            "coverage_percent": rounded(percent(assessed)),
             "coverage_definition": "Weighted rubric checks assessed; NOT percent of source code read",
             "status_counts": dict(Counter(r["status"] for r in rows)),
             "severity_cap": {"severity": worst, "maximum": cap,
                              "trigger_checks": [r["id"] for r in rows if r["severity"] == worst] if cap < 100 else []},
             "dimensions": dimensions, "checks": rows,
             "limitations": ["Heuristic rubric score, not a safety probability or certification.",
+                            "Score covers assessed checks only; unknowns are neither passes nor failures. Always display coverage and scope beside it.",
                             "Arithmetic is deterministic; evidence and classifications require review.",
                             "A complete rubric is not an exhaustive security audit."]}
 
@@ -160,17 +173,19 @@ def markdown(result):
     def cell(value):
         return str(value).replace("|", "\\|").replace("\n", " ").replace("\r", " ")
     score = result["score"]
-    summary = f"{score}/100" if score is not None else f"withheld; possible range {result['score_range'][0]}–{result['score_range'][1]}/100"
-    lines = [f"# {result['verdict']}", "", f"Heuristic rubric score: **{summary}**.",
+    summary = f"{score}/100" if score is not None else "unavailable: no checks assessed"
+    qualifier = " — provisional, assessed checks only" if result["score_is_provisional"] else " — assessed checks"
+    lines = [f"# {result['verdict']}", "", f"Reviewed-evidence score: **{summary}{qualifier}**.",
              f"Rubric {result['rubric_version']}; weighted check coverage: {result['coverage_percent']}% (not source-code coverage).",
              f"Revision: `{result['target']['commit']}`. Install path: {cell(result['target']['install_description'])}.",
-             f"Earned: {result['earned_points']} / {result['applicable_points']} applicable points.",
-             f"Uncapped rubric range: {result['raw_score_range'][0]}–{result['raw_score_range'][1]}/100 (not a statistical confidence interval).",
+             f"Calculation: {result['earned_points']} earned / {result['assessed_points']} assessed points × 100; {result['unknown_points']} of {result['applicable_points']} applicable points unassessed.",
+             f"Uncapped reviewed-evidence score: {result['raw_reviewed_score'] if score is not None else 'unavailable'}.",
+             f"Full-rubric points-only range: {result['score_range'][0]}–{result['score_range'][1]}/100, holding known severity caps fixed. New serious findings can lower it; not a statistical confidence interval.",
              f"Severity cap: {result['severity_cap']['maximum']} ({result['severity_cap']['severity']}).", "",
-             "| Dimension | Earned | Applicable | Unknown points |", "|---|---:|---:|---:|"]
+             "| Dimension | Earned | Assessed | Applicable | Unknown points |", "|---|---:|---:|---:|---:|"]
     for dimension in result["dimensions"].values():
         lines.append("| " + " | ".join(map(cell, [dimension["label"], dimension["earned_points"],
-                                                  dimension["possible_points"], dimension["unknown_points"]])) + " |")
+                                                  dimension["assessed_points"], dimension["possible_points"], dimension["unknown_points"]])) + " |")
     lines += ["",
              "| Check | Result | Severity | Points | Reason and evidence |", "|---|---|---|---:|---|"]
     for row in result["checks"]:
