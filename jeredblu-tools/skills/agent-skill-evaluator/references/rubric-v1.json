@@ -1,0 +1,194 @@
+{
+  "rubric_version": "1.0.0",
+  "dimensions": {
+    "instructions": "Instructions and output",
+    "execution": "Code and execution",
+    "privacy": "Data and credentials",
+    "scope": "Scope and persistence",
+    "dependencies": "Dependencies and assets",
+    "provenance": "Source and external evidence"
+  },
+  "status_credit": {
+    "pass": 1,
+    "concern": 0.5,
+    "fail": 0,
+    "unknown": 0
+  },
+  "severity_caps": {
+    "none": 100,
+    "low": 100,
+    "medium": 69,
+    "high": 49,
+    "critical": 29
+  },
+  "checks": [
+    {
+      "id": "instruction_authority",
+      "dimension": "instructions",
+      "weight": 12,
+      "title": "Instruction authority and consent",
+      "fail_min_severity": "high",
+      "criteria": "Instruction files respect user intent and do not claim higher authority, conceal actions, or bypass approval.",
+      "pass_when": "Instructions defer to user intent and preserve necessary approval.",
+      "concern_when": "Confusing authority language but no operative override or concealed action.",
+      "fail_when": "Active override, hidden action, or instruction to bypass meaningful approval.",
+      "unknown_when": "Required files, paths, runtime context or external evidence are unavailable, unread or unresolved; do not infer a pass from silence."
+    },
+    {
+      "id": "output_integrity",
+      "dimension": "instructions",
+      "weight": 8,
+      "title": "Output integrity",
+      "fail_min_severity": "medium",
+      "criteria": "No undisclosed or mandatory promo, backlinks, output contamination, or misleading output.",
+      "pass_when": "Output content follows user scope; required attribution is disclosed and appropriate.",
+      "concern_when": "Forced promotional footer or backlink in ordinary personal output; medium severity.",
+      "fail_when": "Deliberate deceptive output or forced branding contaminates client/white-label deliverables; high severity.",
+      "unknown_when": "Required files, paths, runtime context or external evidence are unavailable, unread or unresolved; do not infer a pass from silence."
+    },
+    {
+      "id": "instruction_visibility",
+      "dimension": "instructions",
+      "weight": 5,
+      "title": "Hidden or conditional instructions",
+      "fail_min_severity": "high",
+      "criteria": "Hidden Unicode, encoded instructions, reference instructions and conditional behavior are understood and consistent with scope.",
+      "pass_when": "All operative instructions and conditional triggers are visible and consistent with purpose.",
+      "concern_when": "Unclear but decoded/understood instruction formatting without concealed harmful behavior.",
+      "fail_when": "Hidden/encoded triggers conceal unauthorized behavior or evade review.",
+      "unknown_when": "Required files, paths, runtime context or external evidence are unavailable, unread or unresolved; do not infer a pass from silence."
+    },
+    {
+      "id": "remote_execution",
+      "dimension": "execution",
+      "weight": 8,
+      "title": "Download-and-run and dynamic execution",
+      "fail_min_severity": "critical",
+      "criteria": "No unreviewed download-and-run, unsafe eval, or hidden execution; quoted examples are not active behavior.",
+      "pass_when": "No unreviewed download-and-run or unsafe dynamic execution; any code examples are inert.",
+      "concern_when": "Understood, non-exploitable execution hardening weakness with bounded low/medium impact.",
+      "fail_when": "Active unreviewed download-and-run or unsafe evaluation of attacker-controlled commands; critical.",
+      "unknown_when": "Required files, paths, runtime context or external evidence are unavailable, unread or unresolved; do not infer a pass from silence."
+    },
+    {
+      "id": "execution_consent",
+      "dimension": "execution",
+      "weight": 6,
+      "title": "Hooks, installers and execution consent",
+      "fail_min_severity": "medium",
+      "criteria": "All executable entry points and hooks are disclosed, bounded and gated appropriately.",
+      "pass_when": "Entry points, hooks and installation actions are explicit, necessary and appropriately authorized.",
+      "concern_when": "Disclosed automatic action with weak consent granularity but bounded impact.",
+      "fail_when": "Unconsented hook/installer or materially misleading execution path; escalate for persistence or hidden commands.",
+      "unknown_when": "Required files, paths, runtime context or external evidence are unavailable, unread or unresolved; do not infer a pass from silence."
+    },
+    {
+      "id": "script_operations",
+      "dimension": "execution",
+      "weight": 6,
+      "title": "Script input and process safety",
+      "fail_min_severity": "high",
+      "criteria": "Bundled scripts handle untrusted input without arbitrary commands, unsafe path access or scope escape.",
+      "pass_when": "All executable code and inputs reviewed; commands and paths stay within intended scope, or scripts demonstrably absent.",
+      "concern_when": "Bounded input-validation weakness without arbitrary commands or sensitive scope escape.",
+      "fail_when": "Reachable arbitrary command injection, destructive operation or sensitive path escape.",
+      "unknown_when": "Required files, paths, runtime context or external evidence are unavailable, unread or unresolved; do not infer a pass from silence."
+    },
+    {
+      "id": "data_destinations",
+      "dimension": "privacy",
+      "weight": 10,
+      "title": "Data destinations and disclosure",
+      "fail_min_severity": "high",
+      "criteria": "Network destinations and transmitted data are understood, necessary and disclosed; secret exfiltration is critical.",
+      "pass_when": "Data flow and destinations reviewed, necessary and disclosed, or network activity demonstrably absent.",
+      "concern_when": "Disclosed unnecessary telemetry or unclear retention with bounded non-sensitive data.",
+      "fail_when": "Undisclosed sensitive data export, unauthorized transmission, or arbitrary sensitive-resource fetching; secret export critical.",
+      "unknown_when": "Required files, paths, runtime context or external evidence are unavailable, unread or unresolved; do not infer a pass from silence."
+    },
+    {
+      "id": "credentials",
+      "dimension": "privacy",
+      "weight": 10,
+      "title": "Credential handling and access scope",
+      "fail_min_severity": "high",
+      "criteria": "Credential reads/storage are necessary, bounded and protected; unauthorized secret export is critical.",
+      "pass_when": "Only necessary scoped credentials are used, protected and not exported; or no credential access exists.",
+      "concern_when": "Disclosed low-sensitivity credential handling weakness with bounded access and no unauthorized export.",
+      "fail_when": "Overbroad/unauthorized secret reads, cleartext secret exposure or unauthorized export; export critical.",
+      "unknown_when": "Required files, paths, runtime context or external evidence are unavailable, unread or unresolved; do not infer a pass from silence."
+    },
+    {
+      "id": "project_changes",
+      "dimension": "scope",
+      "weight": 5,
+      "title": "Persistence and project changes",
+      "fail_min_severity": "high",
+      "criteria": "Project/system edits, startup behavior and persistence are necessary, explicit and authorized.",
+      "pass_when": "Changes are scoped, reversible and user-authorized; no hidden persistence, or no changes exist.",
+      "concern_when": "Disclosed reversible edit with insufficient rollback details but no sensitive escape.",
+      "fail_when": "Unauthorized persistence, system edits or infection of unrelated projects.",
+      "unknown_when": "Required files, paths, runtime context or external evidence are unavailable, unread or unresolved; do not infer a pass from silence."
+    },
+    {
+      "id": "purpose_match",
+      "dimension": "scope",
+      "weight": 5,
+      "title": "Purpose versus actual instructions",
+      "fail_min_severity": "medium",
+      "criteria": "Actions and permissions match the stated purpose; functional correctness is not established by static review.",
+      "pass_when": "Reviewed actions/permissions match advertised purpose; no unsupported runtime-success claims.",
+      "concern_when": "Minor documented scope creep or overstated claim without sensitive side effects.",
+      "fail_when": "Material hidden functionality, misleading capability claim or permissions unrelated to purpose.",
+      "unknown_when": "Required files, paths, runtime context or external evidence are unavailable, unread or unresolved; do not infer a pass from silence."
+    },
+    {
+      "id": "dependencies",
+      "dimension": "dependencies",
+      "weight": 8,
+      "title": "External components and pinning",
+      "fail_min_severity": "medium",
+      "criteria": "Declared packages/MCP servers and install behavior are identified and bounded; unavailable executable code remains unknown.",
+      "pass_when": "Executable dependencies/MCP components and their constraints are identified and reviewed sufficiently, or demonstrably absent.",
+      "concern_when": "Disclosed mutable/unpinned dependency with otherwise reviewed bounded behavior.",
+      "fail_when": "Established unsafe executable dependency/install behavior; not merely a dependency that was unavailable for review.",
+      "unknown_when": "Required files, paths, runtime context or external evidence are unavailable, unread or unresolved; do not infer a pass from silence."
+    },
+    {
+      "id": "assets",
+      "dimension": "dependencies",
+      "weight": 7,
+      "title": "Assets and indirect execution surfaces",
+      "fail_min_severity": "high",
+      "criteria": "References, embedded documents/configs and assets do not introduce unreviewed instructions or executable content.",
+      "pass_when": "All indirect instructions and executable-capable assets are understood or absent.",
+      "concern_when": "Understood inert asset/reference issue with bounded impact.",
+      "fail_when": "Confirmed hidden executable/instruction payload or exploitable unsafe asset-processing path.",
+      "unknown_when": "Required files, paths, runtime context or external evidence are unavailable, unread or unresolved; do not infer a pass from silence."
+    },
+    {
+      "id": "source_identity",
+      "dimension": "provenance",
+      "weight": 5,
+      "title": "Source identity and revision",
+      "fail_min_severity": "medium",
+      "criteria": "Reviewed bytes have an identity/hash or pinned revision and origin is investigated; popularity is not safety evidence.",
+      "pass_when": "Reviewed bytes pinned by hash/revision; supplied source/origin investigated and consistent.",
+      "concern_when": "Identified source with weak ownership continuity or limited history, not low popularity alone.",
+      "fail_when": "Demonstrated impersonation, provenance mismatch or fabricated source identity.",
+      "unknown_when": "Required files, paths, runtime context or external evidence are unavailable, unread or unresolved; do not infer a pass from silence."
+    },
+    {
+      "id": "external_evidence",
+      "dimension": "provenance",
+      "weight": 5,
+      "title": "Independent evidence and maintainer claims",
+      "fail_min_severity": "medium",
+      "criteria": "Bounded independent research and available history are reviewed; no results is not an endorsement and blocked research is unknown.",
+      "pass_when": "Bounded relevant research/history reviewed with outcomes documented; zero relevant results does not imply safety.",
+      "concern_when": "Verified limited credibility issue or unresolved conflicting independent claims.",
+      "fail_when": "Credible corroborated security warning or materially fabricated maintainer claim relevant to use.",
+      "unknown_when": "Required files, paths, runtime context or external evidence are unavailable, unread or unresolved; do not infer a pass from silence."
+    }
+  ]
+}

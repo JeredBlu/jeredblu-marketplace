@@ -2,6 +2,15 @@
 
 All notable changes to this skill. Versioning follows [SemVer](https://semver.org).
 
+## [1.4.0] — 2026-10-13
+
+- Replaced freehand dimension scores with 14 anchored evidence checks, deterministic arithmetic, explicit unknown coverage and severity caps. No safety probability or certification claim.
+- Single-pass static scanner preserves every structured lead, reports skipped content and limits, and no longer silently hides files beyond the first 60. Uses Python standard library only.
+- Conservative archive inspection/extraction rejects path traversal, links and ambiguous/oversized archives. Corrected the claim that a temporary directory alone prevents zip-slip.
+- Default Markdown, one reusable local snapshot/evidence ledger, bounded external research and unique report workspace reduce avoidable work. Static-only and all trust-relevant top-risk disclosure remain.
+- Corrected reference examples that wrongly equated a string-prefix check with containment or a working directory with a sandbox.
+- Version moved to standard `metadata.version`; see tests/test_evaluator.py for offline behavior tests. Real skill judgment still requires evidence review; fixtures do not prove attack detection completeness.
+
 ## [1.3.0] — 2026-07-18
 
 Robustness pass. On a real 275-file repo, a lower-effort run (Sonnet medium) skimmed,

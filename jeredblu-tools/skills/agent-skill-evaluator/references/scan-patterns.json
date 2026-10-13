@@ -1,0 +1,42 @@
+[
+  {
+    "category": "Forced output / promo / backlink",
+    "pattern": "skool\\.com|patreon\\.com|ko-fi\\.com|buymeacoffee|gumroad|discord\\.(gg|com/invite)|t\\.me/|append this footer|community footer|as the (very )?last output|do ?n.?t remove (this|the) (footer|link|attribution|line|section)"
+  },
+  {
+    "category": "Remote execution (download-and-run)",
+    "pattern": "curl[^|]*\\|[^|]*(ba)?sh|wget[^|]*\\|[^|]*(ba)?sh|iwr[^|]*\\|[^|]*iex|bash -c[^)]*curl|\\$\\(curl|\\$\\(wget"
+  },
+  {
+    "category": "Credential access (extraction)",
+    "pattern": "gh auth token|\\.aws/credentials|id_rsa|\\.ssh/id|security find-(generic|internet)-password|gcloud auth print|aws_secret_access_key|(cat|open|read|source|load|dotenv)[^;|]{0,30}\\.env"
+  },
+  {
+    "category": "Auto-execution (hooks / installers / startup)",
+    "pattern": "posttooluse|pretooluse|sessionstart|hooks\\.json|\"hooks\"|postinstall|preinstall|launchagents|launchdaemons|crontab|cron\\.d"
+  },
+  {
+    "category": "Supply chain (auto-run installs / MCP)",
+    "pattern": "npx +-y|npx +--yes|npm install +-g|pipx run|uvx +|postinstall|\"command\" *: *\"(npx|uvx|node|python[0-9]?)\""
+  },
+  {
+    "category": "Phone-home / callbacks",
+    "pattern": "webhook|telemetry|/(beacon|ingest)\\b|hooks\\.[a-z0-9.-]+\\.[a-z]+/|https?://[0-9]{1,3}(\\.[0-9]{1,3}){3}"
+  },
+  {
+    "category": "Obfuscation / dynamic eval",
+    "pattern": "base64|b64decode|atob\\(|fromcharcode|rot13|codecs\\.decode|eval\\(|exec\\(|os\\.system|subprocess\\.(popen|run|call).*shell=true"
+  },
+  {
+    "category": "Project infection (build phases / CI / cron)",
+    "pattern": "pbxshellscript|\\.pbxproj|run script phase|\\.github/workflows|package\\.json|\\.git/hooks|pre-commit|launchctl"
+  },
+  {
+    "category": "Instruction override / concealment",
+    "pattern": "ignore (all |any )?(previous|prior|system) instructions|disregard (all |any )?(previous|prior)|do not tell the user|never mention.*(instruction|tracking|upload)"
+  },
+  {
+    "category": "Invisible / directional controls",
+    "pattern": "[\u200b-\u200f\u202a-\u202e\u2066-\u2069\ufeff]"
+  }
+]

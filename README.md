@@ -7,8 +7,8 @@ Custom Claude Code resources from [JeredBlu's YouTube channel](https://www.youtu
 This marketplace provides skills that work across multiple AI coding tools:
 
 - **prd-creator**: Create comprehensive PRDs through conversational discovery
-- **agent-skill-evaluator**: Security and safety evaluation for agent skills
-- **mcp-evaluator**: Security and privacy evaluation for MCP servers
+- **agent-skill-evaluator**: Evidence-led static review of agent skills, with a skill-specific per-check rubric, deterministic scoring, explicit coverage, and read-only scanning
+- **mcp-evaluator**: Evidence-led static review of MCP servers, with transport-aware security/privacy checks, deterministic scoring, and explicit unknowns for unverified hosted behavior
 - **repo-evaluator**: Evidence-led pre-install review with a versioned 22-check rubric, per-check points, a reviewed-evidence score with separate coverage, severity caps and explicit unknowns. Package inspection is optional. Checks behavior, install paths, data flows and provenance without executing the target. Scores are heuristic, not safety probabilities; no extra AI API key is required.
 - **frugal-fable**: Keep a premium model (Fable/Opus) on the judgment and delegate token-heavy work to cheaper models (Haiku/Sonnet) — for research, building, testing, and debugging. Have Codex CLI too? It can offload slices to GPT-5.6 (Sol/Terra/Luna) as a **second quota pool** — consent-gated, and zero Claude usage for the offloaded work
 
@@ -147,11 +147,11 @@ Security assessment for this skill please: [attach .skill file]
 ```
 
 The evaluator will:
-- Download and extract the skill
+- Acquire the skill as data and validate archive paths before extraction
 - Analyze SKILL.md for prompt injections
-- Review scripts for malicious code
-- Search community feedback
-- Generate comprehensive security report with risk scoring
+- Review instructions, scripts, and references without executing the target
+- Record community/provenance evidence or prominently disclose missing research
+- Generate a per-check evidence ledger and calculated score with separate review coverage
 
 **Features:**
 - Prompt injection detection
@@ -159,7 +159,8 @@ The evaluator will:
 - Hidden instruction scanning
 - Data exfiltration detection
 - Community validation
-- Risk scoring (0-100 scale)
+- Reviewed-evidence scoring (0-100) with weighted coverage and severity caps
+- Scanner gaps reported explicitly; keyword hits are leads, not automatic findings
 - Actionable recommendations
 
 ### MCP Server Evaluator
@@ -172,20 +173,22 @@ Is this MCP safe to use? https://github.com/org/mcp-repo
 ```
 
 The evaluator will:
-- Analyze repository metadata and activity
-- Review code for security vulnerabilities
-- Search for alternatives and comparisons
-- Gather community feedback (including Reddit with Pro Mode)
-- Generate detailed assessment with recommendations
+- Identify the intended deployment: local stdio, local HTTP, or remote HTTP
+- Review source, tool permissions, authentication, credentials, and data flows without starting the server
+- Separate observed source behavior from unverified hosted-service claims
+- Gather relevant provenance/community evidence; research alternatives when requested
+- Generate a per-check evidence ledger and calculated score with separate review coverage
 
 **Features:**
 - Security vulnerability analysis
 - Privacy risk assessment
 - Code quality review
-- Alternative server discovery
+- Optional alternative server comparisons
 - Community feedback research (Reddit, forums, GitHub)
-- Multi-dimensional scoring
-- Usability assessment
+- MCP-specific per-check scoring with coverage and severity caps
+- Usability notes kept separate from the security/privacy score
+
+Both evaluators use local rubric calculators; no extra AI API key or hosted judge is required. Higher scores mean fewer concerns in the **assessed checks**, not a probability of safety. Unknowns reduce coverage, and serious findings cannot be averaged away. Their rubrics cover different scopes: do not compare their numbers as interchangeable safety ratings. Offline tests validate helper behavior and scoring rules, not real-world detection accuracy.
 
 ### Repo Evaluator
 

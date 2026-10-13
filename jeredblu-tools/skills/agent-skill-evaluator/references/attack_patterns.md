@@ -1,6 +1,6 @@
 # Attack Patterns Reference
 
-This document catalogs known prompt injection and malicious code patterns that may appear in agent skills.
+This document catalogs examples of prompt injection and malicious code patterns that may appear in agent skills. Severity labels describe harmful implementations, not automatic ratings for a matching word, import, Unicode character or quoted example. Confirm active behavior, input control, permissions and consequences before classifying; use rubric-v1.json and scoring.md for current scoring.
 
 ## Contents
 

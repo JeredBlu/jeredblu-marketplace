@@ -1,0 +1,212 @@
+{
+  "rubric_version": "1.0.0",
+  "description": "MCP-specific reviewed-evidence rubric. Policy weights are heuristic, not empirically calibrated safety probabilities.",
+  "dimensions": {
+    "security": "Security boundaries",
+    "privacy": "Privacy",
+    "supply": "Launch and supply chain",
+    "reliability": "Reliability",
+    "transparency": "Transparency"
+  },
+  "status_credit": {
+    "concern": 0.5,
+    "fail": 0,
+    "pass": 1
+  },
+  "severity_caps": {
+    "none": 100,
+    "low": 100,
+    "medium": 69,
+    "high": 49,
+    "critical": 29
+  },
+  "core_checks": [
+    "security.transport",
+    "security.authorization",
+    "security.inputs",
+    "privacy.destinations"
+  ],
+  "implementation_checks": [
+    "security.transport",
+    "security.authorization",
+    "security.inputs",
+    "security.tool_trust",
+    "security.credentials",
+    "privacy.destinations",
+    "privacy.logging",
+    "supply.launch",
+    "supply.dependencies",
+    "reliability.resources",
+    "privacy.hosted"
+  ],
+  "checks": [
+    {
+      "id": "security.transport",
+      "dimension": "security",
+      "weight": 10,
+      "title": "Transport access boundary",
+      "criteria": {
+        "concern": "Disclosed exposure has bounded residual risk",
+        "fail": "Unauthorized parties can reach sensitive operations",
+        "pass": "Local stdio ownership/launch boundary reviewed, or HTTP authentication, network exposure and origin handling reviewed"
+      },
+      "fail_min_severity": "high"
+    },
+    {
+      "id": "security.authorization",
+      "dimension": "security",
+      "weight": 10,
+      "title": "Tool and resource authorization",
+      "criteria": {
+        "concern": "Disclosed broad but justified capability requires precautions",
+        "fail": "Caller can act outside authorized user/resource scope",
+        "pass": "Tools/resources/prompts checked for per-user scope, least privilege and write controls; annotations are not enforcement"
+      },
+      "fail_min_severity": "high"
+    },
+    {
+      "id": "security.inputs",
+      "dimension": "security",
+      "weight": 10,
+      "title": "Input to privileged sinks",
+      "criteria": {
+        "concern": "Disclosed intentional powerful tools have meaningful residual exposure",
+        "fail": "Untrusted input crosses an intended privilege/path/command/network boundary",
+        "pass": "Sensitive tool call paths traced through validation to shell, filesystem, SQL and network sinks"
+      },
+      "fail_min_severity": "high"
+    },
+    {
+      "id": "security.tool_trust",
+      "dimension": "security",
+      "weight": 8,
+      "title": "Agent-facing trust boundaries",
+      "criteria": {
+        "concern": "Broad agent guidance requires explicit precautions",
+        "fail": "Agent-facing content hijacks authority, conceals actions or directs secret exfiltration",
+        "pass": "Tool descriptions, prompts and returned content do not override user approval or leak instructions/secrets"
+      },
+      "fail_min_severity": "high"
+    },
+    {
+      "id": "security.credentials",
+      "dimension": "security",
+      "weight": 7,
+      "title": "Credential handling",
+      "criteria": {
+        "concern": "Disclosed broad credentials or local storage need precautions",
+        "fail": "Secrets exposed or used outside legitimate authorized purpose",
+        "pass": "Secret acquisition, storage, forwarding, scopes and redaction reviewed; no unjustified access"
+      },
+      "fail_min_severity": "high"
+    },
+    {
+      "id": "privacy.destinations",
+      "dimension": "privacy",
+      "weight": 8,
+      "title": "Data destinations and collection",
+      "criteria": {
+        "concern": "Disclosed third-party transfer has significant privacy implications",
+        "fail": "Covert or unjustified data collection or transfer",
+        "pass": "Sensitive data sources and network destinations traced; transfers necessary and disclosed"
+      },
+      "fail_min_severity": "high"
+    },
+    {
+      "id": "privacy.logging",
+      "dimension": "privacy",
+      "weight": 6,
+      "title": "Logs and telemetry",
+      "criteria": {
+        "concern": "Disclosed default telemetry or bounded logging exposure",
+        "fail": "Sensitive data logged or telemetry concealed contrary to stated controls",
+        "pass": "No sensitive logging/telemetry or reviewed minimization and user controls"
+      },
+      "fail_min_severity": "medium"
+    },
+    {
+      "id": "privacy.hosted",
+      "dimension": "privacy",
+      "weight": 6,
+      "title": "Hosted deployment and retention",
+      "criteria": {
+        "concern": "Verified deployed service has disclosed retention/control limitations",
+        "fail": "Verified deployed behavior materially contradicts privacy or isolation promises",
+        "pass": "Evidence supports actual deployed behavior and retention for the selected hosted service; policy claims alone are not verification"
+      },
+      "fail_min_severity": "high"
+    },
+    {
+      "id": "supply.launch",
+      "dimension": "supply",
+      "weight": 7,
+      "title": "Launch and package provenance",
+      "criteria": {
+        "concern": "Floating npx/uvx/container version or weak source-to-artifact linkage needs precautions",
+        "fail": "Untrusted or undisclosed install/update execution",
+        "pass": "Exact intended launch/install hooks and source or artifact linkage inspected without execution"
+      },
+      "fail_min_severity": "high"
+    },
+    {
+      "id": "supply.dependencies",
+      "dimension": "supply",
+      "weight": 8,
+      "title": "Resolved dependencies and advisories",
+      "criteria": {
+        "concern": "Pinning gaps or applicable advisories with credible bounded mitigations",
+        "fail": "Applicable unmitigated vulnerability or suspicious dependency substitution",
+        "pass": "Applicable resolved sources and current advisory results reviewed without material issues"
+      },
+      "fail_min_severity": "medium"
+    },
+    {
+      "id": "reliability.resources",
+      "dimension": "reliability",
+      "weight": 5,
+      "title": "Bounds and failures",
+      "criteria": {
+        "concern": "Bounded availability/retry/error handling limitations",
+        "fail": "Exploitable resource exhaustion or sensitive error disclosure",
+        "pass": "Relevant timeouts, size limits, errors and resource bounds reviewed in context"
+      },
+      "fail_min_severity": "medium"
+    },
+    {
+      "id": "reliability.maintenance",
+      "dimension": "reliability",
+      "weight": 5,
+      "title": "Maintenance and incident response",
+      "criteria": {
+        "concern": "Thin maintenance/history or unresolved low-risk concern",
+        "fail": "Corroborated serious unresolved maintenance/security-response problem",
+        "pass": "Relevant history/incident evidence reviewed without material concern"
+      },
+      "fail_min_severity": "medium"
+    },
+    {
+      "id": "transparency.disclosure",
+      "dimension": "transparency",
+      "weight": 5,
+      "title": "Capabilities and configuration",
+      "criteria": {
+        "concern": "Bounded documentation/configuration gaps",
+        "fail": "Materially misleading capability or permission disclosure",
+        "pass": "Docs match reviewed tools, permissions, remote data handling and setup defaults"
+      },
+      "fail_min_severity": "medium"
+    },
+    {
+      "id": "transparency.identity",
+      "dimension": "transparency",
+      "weight": 5,
+      "title": "Identity and selected scope",
+      "criteria": {
+        "concern": "Limited provenance requires precautions",
+        "fail": "Impersonation or suspicious origin substitution",
+        "pass": "Origin/ownership and selected revision/service identity corroborated"
+      },
+      "fail_min_severity": "high"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # Safe Skill Examples
 
-This document provides examples of legitimate skill patterns that might appear suspicious but are actually safe and appropriate for agent skills.
+These examples illustrate potentially legitimate intent, not proof that an implementation is safe. Verify path handling, authorization, dependencies and data flow in the actual target; documentation labels do not establish safety.
 
 ## Legitimate Complex Instructions
 
@@ -109,7 +109,7 @@ def process_template(template_name, output_path):
 
 **Why This is Safe**:
 - Only accesses bundled assets (not system files)
-- File paths are validated
+- File existence alone is not path validation: template names must also be contained within the intended asset root
 - Operations are limited to skill's intended functionality
 - No unauthorized file system access
 
@@ -131,7 +131,7 @@ def read_user_document(filepath):
 ```
 
 **Why This is Safe**:
-- Validates file location before access
+- The shown string-prefix check is insufficient: `../` and symlinks can escape it; verify resolved containment in real code
 - Only reads from user-uploaded files
 - Clear purpose aligned with skill functionality
 - No access to system or sensitive files
@@ -185,12 +185,12 @@ def check_for_updates():
 
 ## Legitimate Code Execution
 
-### Example 1: Sandboxed Script Execution
+### Example 1: Bounded Script Invocation (Not a Sandbox)
 
 **Pattern**:
 ```python
 def run_analysis_script(input_data):
-    """Execute bundled analysis script safely."""
+    """Invoke a bundled script with a timeout; not an OS sandbox."""
     script_path = 'scripts/data_analyzer.py'
     
     # Run in controlled environment
@@ -200,7 +200,7 @@ def run_analysis_script(input_data):
         capture_output=True,
         text=True,
         timeout=30,  # Prevent hanging
-        cwd='/home/claude'  # Controlled working directory
+        cwd='/home/claude'  # Working directory only, not access isolation
     )
     
     return result.stdout
@@ -209,8 +209,8 @@ def run_analysis_script(input_data):
 **Why This is Safe**:
 - Only executes bundled, reviewed scripts
 - Uses timeout to prevent DoS
-- Runs in controlled directory
-- Captures output without system access
+- A working directory and timeout do not restrict filesystem/network permissions
+- Captured output does not prevent system access; actual sandboxing requires a separate enforcement mechanism
 
 ### Example 2: Data Transformation
 
